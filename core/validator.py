@@ -4,5 +4,7 @@ def validate_data(ingredients,constraints):
         errors.append("ingredients file is empty")
     if (constraints.empty):
         errors.append("nutrient constraints file is empty")
+    if ("COST" not in ingredients.columns):
+        errors.append("cost column not available")
     return errors
 

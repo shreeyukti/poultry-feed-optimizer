@@ -6,6 +6,7 @@ ingredients=load_csv(INGREDIENTS_FILE)
 constraints=load_csv(CONSTRAINTS_FILE)
 errors=validate_data(ingredients,constraints)
 if errors:
-    print(errors)
+    for error in errors:
+        print("-",error)
 else:
     print("data loaded successfully")
