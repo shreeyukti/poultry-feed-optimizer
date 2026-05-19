@@ -1,6 +1,6 @@
 import pandas as pd
 
 def load_csv(path):
-    df = pd.read_csv(path)
-    df.columns = df.columns.str.strip()
+    df=pd.read_csv(path)
+    df.columns=df.columns.str.strip()
     return df
