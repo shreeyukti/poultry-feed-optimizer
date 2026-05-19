@@ -21,7 +21,7 @@ def validate_data(ingredients, constraints):
         for index, row in missing_costs.iterrows():
 
             ingredient_name = row["ingredient"]
-            warnings.append(f"{ingredient_name}ignored because cost is missing")
+            warnings.append(f"{ingredient_name} ignored because cost is missing")
 
         negative_costs = ingredients[ingredients["COST"].notna() & (ingredients["COST"] < 0)]
 
