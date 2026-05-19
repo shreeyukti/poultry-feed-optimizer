@@ -19,14 +19,21 @@ if errors:
 
 else:
     print("Data loaded successfully")
-    active_ingredients=ingredients.dropna(subset="COST")
+    active_ingredients = ingredients[ingredients["cost"].notna() & (ingredients["cost"] > 0)]
 
-    model, quantity = run_optimization(active_ingredients)
+    active_ingredients = active_ingredients.fillna(0)
+    
+    
+    model, quantity = run_optimization(active_ingredients,constraints)
 
-    print("Status:",pulp.LpStatus[model.status])
-    print("Total cost:", pulp.value(model.objective))
+    status=pulp.LpStatus[model.status]
+    if (status=="Optimal"):
 
-    for name,var in quantity.items():
-        if var.varValue and var.varValue>0:
-            print(name,var.varValue)
-    print(quantity)
+        print("Total cost:", pulp.value(model.objective))
+
+        for name,var in quantity.items():
+            if var.varValue and var.varValue>0:
+                print(name,":",var.varValue)
+        print(quantity)
+    else:
+        print("no valid solution found for the given constraints")
