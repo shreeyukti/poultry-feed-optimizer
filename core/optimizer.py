@@ -1,38 +1,39 @@
+import pandas as pd
 import pulp
 
-def run_optimization(ingredients,constraints):
+def run_optimization(ingredients, constraints):
+    model = pulp.LpProblem("feed_optimization", pulp.LpMinimize)
+    quantity = {}
+    for index, row in ingredients.iterrows():
+        name = row["ingredient"]
+        min_qty = row["minquantity"]
+        max_qty = row["maxquantity"]
 
-    model=pulp.LpProblem("feed_optimization", pulp.LpMinimize)
-    quantity={}
-    for index,row in ingredients.iterrows():
-        name=row["ingredient"]
-        min_qty=row["minquantity"]
-        max_qty=row["maxquantity"]
-        if min_qty!=min_qty:
-            min_qty=0
-        if max_qty!=max_qty or max_qty==0:
-            max_qty=None
-        quantity[name]=pulp.LpVariable(name,lowBound=min_qty, upBound=max_qty)
-    total_cost=0
-    for index,row in ingredients.iterrows():
-        name=row["ingredient"]
-        total_cost=total_cost+quantity[name]*row["cost"]
-    model+=total_cost
-    model+=pulp.lpSum(quantity.values())==1000
+        if pd.isna(min_qty):
+            min_qty = 0
 
-    for index,row in constraints.iterrows():
-        nutrient=row["nutrient"]
-        min_value=row["min"]
-        max_value=row["max"]
+        if pd.isna(max_qty):
+            max_qty = None
+        quantity[name] = pulp.LpVariable(name,lowBound=min_qty,upBound=max_qty)
+    model += pulp.lpSum(quantity[row["ingredient"]] * row["cost"]for index, row in ingredients.iterrows())
+    model += pulp.lpSum(quantity.values()) == 1000
+
+    for index, row in constraints.iterrows():
+        nutrient = row["nutrient"]
+        min_value = row["min"]
+        max_value = row["max"]
 
         if nutrient not in ingredients.columns:
+            print("Skipping missing nutrient:", nutrient)
             continue
 
-        nutrient_total=pulp.lpSum(quantity[ingredient_row["ingredient"]]*ingredient_row[nutrient] for i, ingredient_row in ingredients.iterrows())
-        if min_value==min_value:
-            model += nutrient_total >= (min_value  * 1000)
-        if max_value==max_value:
-            model += nutrient_total <= (max_value  * 1000)
-    model.solve(pulp.PULP_CBC_CMD(msg=False))
+        nutrient_total = pulp.lpSum(quantity[ingredient_row["ingredient"]] *(0 if pd.isna(ingredient_row[nutrient]) else ingredient_row[nutrient])for i, ingredient_row in ingredients.iterrows())
 
-    return model,quantity
+        if not pd.isna(min_value):
+            model += nutrient_total >= min_value * 1000
+
+        if not pd.isna(max_value):
+            model += nutrient_total <= max_value * 1000
+
+    model.solve(pulp.PULP_CBC_CMD(msg=True))
+    return model, quantity
