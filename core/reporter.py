@@ -1,15 +1,21 @@
 import pulp
+import pandas as pd
 def generate_report(model,quantity,ingredients):
-    previous_cost=(ingredients["currentquantity"]*ingredients["cost"]).sum()
-    optimized_cost=pulp.value(model.objective)
-    difference=previous_cost-optimized_cost
-    #print("\n COST SUMMARY:\n")
-    #print(ingredients[["ingredient", "currentquantity", "cost"]])
-    #print("Previous cost: ",round(previous_cost,3))
-    #print("Current cost: ",round(optimized_cost,4))
-    #print("Difference: ",round(difference,4))
+    rows=[]
+    for name,var in quantity.items():
+        optimized_qty=var.value()
+        if optimized_qty  is None:
+            optimized_qty=0
+        ingredient_row=ingredients[ingredients["ingredient"]==name].iloc[0]
 
-    for name, var in quantity.items():
-        if var.varValue is not None and var.varValue > 0:
-            print("nutrient:", name," quantity: ", round(var.varValue, 2))
-    print("Total cost:",round(optimized_cost,3))
+        cost=ingredient_row["cost"]
+
+        rows.append({"Ingredient":name, "Optimised Quantity":round(optimized_qty,3),"cost per kg":round(cost,3),"Total cost":round(optimized_qty*cost,3)})
+    report_df=pd.DataFrame(rows)
+    used_dataframe=report_df[report_df["Optimised Quantity"]>0]
+
+    print(used_dataframe.to_string(index=False))
+    print("total quantity:",round(report_df["Optimised Quantity"].sum(), 3))
+    print("total cost:",round(pulp.value(model.objective),3))
+    report_df.to_csv("optiimised_result.csv",index=False)
+    return report_df
