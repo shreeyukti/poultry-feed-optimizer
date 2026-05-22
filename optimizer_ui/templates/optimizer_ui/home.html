@@ -1,0 +1,61 @@
+<h1>NutriOpt Feed Optimizer</h1>
+
+<form method="post">
+    {% csrf_token %}
+    <button type="submit">Run Optimization</button>
+</form>
+
+{% if status %}
+    <h2>Status: {{ status }}</h2>
+    <h2>Total Cost: {{ total_cost }}</h2>
+    {% if ingredients %}
+
+<h2>Optimized Ingredients</h2>
+
+<table border="1">
+
+    <tr>
+        <th>Ingredient</th>
+        <th>Quantity kg</th>
+    </tr>
+
+    {% for item in ingredients %}
+
+    <tr>
+        <td>{{ item.name }}</td>
+        <td>{{ item.quantity }}</td>
+    </tr>
+
+    {% endfor %}
+
+</table>
+{% if nutrients %}
+
+<h2>Achieved Nutrients</h2>
+
+<table border="1">
+
+    <tr>
+        <th>Nutrient</th>
+        <th>Achieved</th>
+        <th>Min</th>
+        <th>Max</th>
+    </tr>
+
+    {% for nutrient in nutrients %}
+
+    <tr>
+        <td>{{ nutrient.name }}</td>
+        <td>{{ nutrient.achieved }}</td>
+        <td>{{ nutrient.min }}</td>
+        <td>{{ nutrient.max }}</td>
+    </tr>
+
+    {% endfor %}
+
+</table>
+
+{% endif %}
+
+{% endif %}
+{% endif %}

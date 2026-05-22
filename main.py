@@ -20,9 +20,9 @@ if errors:
 else:
     print("Data loaded successfully")
     active_ingredients = ingredients[ingredients["cost"].notna() & (ingredients["cost"] > 0)]
-    model, quantity = run_optimization(active_ingredients,constraints)
+    model, quantity,constraints = run_optimization(active_ingredients,constraints)
     status=pulp.LpStatus[model.status]
     if (status=="Optimal"):
-        generate_report(model,quantity,active_ingredients)
+        generate_report(model,quantity,active_ingredients,constraints)
     else:
         print("no valid solution found for the given constraints")

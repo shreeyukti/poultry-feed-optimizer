@@ -36,4 +36,5 @@ def run_optimization(ingredients, constraints):
             model += nutrient_total <= max_value * 1000
 
     model.solve(pulp.PULP_CBC_CMD(msg=False))
-    return model, quantity
+
+    return model, quantity, constraints
