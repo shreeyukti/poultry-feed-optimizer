@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Ingredient, Nutrient, IngredientNutrient, NutrientConstraint
+from .models import (Company,Plant,Formula,Ingredient,Nutrient,IngredientNutrient,NutrientConstraint,OptimizationRun,OptimizationResultItem,)
 
 
 class IngredientNutrientInline(admin.TabularInline):
@@ -18,11 +18,16 @@ class NutrientAdmin(admin.ModelAdmin):
     list_display = ("name",)
 
 
-@admin.register(IngredientNutrient)
-class IngredientNutrientAdmin(admin.ModelAdmin):
-    list_display = ("ingredient", "nutrient", "value")
 
 
 @admin.register(NutrientConstraint)
 class NutrientConstraintAdmin(admin.ModelAdmin):
-    list_display = ("nutrient", "min", "max")
+    list_display = ("formula", "nutrient", "min_value", "max_value")
+    list_filter = ("formula", "nutrient")
+    search_fields = ("nutrient__name", "formula__name")
+
+
+
+admin.site.register(Formula)
+admin.site.register(Plant)
+admin.site.register(Company)
