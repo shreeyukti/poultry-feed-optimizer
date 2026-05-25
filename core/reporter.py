@@ -3,39 +3,31 @@ import pandas as pd
 
 
 def generate_report(model, quantity, ingredients, constraints):
-    rows = []
+    ingredient_rows = []
 
     for name, var in quantity.items():
-        optimized_qty = var.value()
-
-        if optimized_qty is None:
-            optimized_qty = 0
-
+        optimized_qty = var.value() or 0
         ingredient_row = ingredients[ingredients["ingredient"] == name].iloc[0]
         cost = ingredient_row["cost"]
 
-        rows.append({
-            "Ingredient": name,
-            "Optimised Quantity": round(optimized_qty, 3),
-            "cost per kg": round(cost, 3),
-            "Total cost": round(optimized_qty * cost, 3)
+        ingredient_rows.append({
+            "name": name,
+            "quantity": round(optimized_qty, 3),
+            "minquantity": ingredient_row["minquantity"],
+            "maxquantity": ingredient_row["maxquantity"],
+            "cost_per_kg": round(cost, 3),
+            "total_cost": round(optimized_qty * cost, 3)
+
         })
 
-    report_df = pd.DataFrame(rows)
-    used_dataframe = report_df[report_df["Optimised Quantity"] > 0]
-
-    print("\nOPTIMISED INGREDIENT QUANTITY:")
-    print(used_dataframe.to_string(index=False))
-
-    print("\nTOTAL SUMMARY:")
-    print("total quantity:", round(report_df["Optimised Quantity"].sum(), 3))
-    print("total cost:", round(pulp.value(model.objective), 3))
-
-    print("\nACHIEVED NUTRIENTS:")
+    used_ingredients = [
+        row for row in ingredient_rows
+        if row["quantity"] > 0
+    ]
 
     nutrient_rows = []
 
-    for index, row in constraints.iterrows():
+    for _, row in constraints.iterrows():
         nutrient = row["nutrient"]
 
         if nutrient not in ingredients.columns:
@@ -43,13 +35,9 @@ def generate_report(model, quantity, ingredients, constraints):
 
         nutrient_total = 0
 
-        for i, ingredient_row in ingredients.iterrows():
+        for _, ingredient_row in ingredients.iterrows():
             ing_name = ingredient_row["ingredient"]
-            qty = quantity[ing_name].value()
-
-            if qty is None:
-                qty = 0
-
+            qty = quantity[ing_name].value() or 0
             nutrient_value = ingredient_row[nutrient]
 
             if pd.isna(nutrient_value):
@@ -60,16 +48,16 @@ def generate_report(model, quantity, ingredients, constraints):
         achieved_value = nutrient_total / 1000
 
         nutrient_rows.append({
-            "Nutrient": nutrient,
-            "Achieved Value": round(achieved_value, 4),
-            "Min Required": row["min"],
-            "Max Allowed": row["max"]
+            "name": nutrient,
+            "achieved": round(achieved_value, 4),
+            "min": row["min"],
+            "max": row["max"]
         })
 
-    nutrient_df = pd.DataFrame(nutrient_rows)
-    print(nutrient_df.to_string(index=False))
+    total_cost = round(pulp.value(model.objective), 3)
 
-    report_df.to_csv("optiimised_result.csv", index=False)
-    nutrient_df.to_csv("achieved_nutrients.csv", index=False)
-
-    return report_df,nutrient_df
+    return {
+        "total_cost": total_cost,
+        "ingredients": used_ingredients,
+        "nutrients": nutrient_rows
+    }
