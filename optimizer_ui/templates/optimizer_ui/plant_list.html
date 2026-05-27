@@ -1,0 +1,15 @@
+<h1>Select Plant</h1>
+
+{% for plant in plants %}
+    <div style="border:1px solid #ddd; padding:16px; margin-bottom:12px;">
+        <h2>{{ plant.name }}</h2>
+        <p>{{ plant.company.name }}</p>
+        <p>{{ plant.location }}</p>
+
+        <a href="{% url 'optimizer_ui:formula_list' plant.id %}">
+            Open Formulas
+        </a>
+    </div>
+{% empty %}
+    <p>No plants found.</p>
+{% endfor %}

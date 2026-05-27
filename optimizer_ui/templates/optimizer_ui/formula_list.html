@@ -1,0 +1,16 @@
+<a href="{% url 'optimizer_ui:plant_list' %}">← Back to Plants</a>
+
+<h1>{{ plant.name }} Formulas</h1>
+<p>Company: {{ plant.company.name }}</p>
+
+{% for formula in formulas %}
+    <div style="border:1px solid #ddd; padding:16px; margin-bottom:12px;">
+        <h2>{{ formula.name }}</h2>
+
+        <a href="{% url 'optimizer_ui:formula_detail' formula.id %}">
+            Open Formula
+        </a>
+    </div>
+{% empty %}
+    <p>No formulas found for this plant.</p>
+{% endfor %}

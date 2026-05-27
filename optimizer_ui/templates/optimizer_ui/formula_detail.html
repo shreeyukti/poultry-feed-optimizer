@@ -1,0 +1,123 @@
+<a href="{% url 'optimizer_ui:formula_list' plant.id %}">← Back to Formulas</a>
+
+<h1>{{ formula.name }}</h1>
+<p>Plant: {{ plant.name }}</p>
+<p>Company: {{ plant.company.name }}</p>
+
+<hr>
+
+<h2>Ingredients</h2>
+
+<table border="1" cellpadding="8">
+    <tr>
+        <th>Ingredient</th>
+        <th>Cost</th>
+        <th>Min Qty</th>
+        <th>Max Qty</th>
+        <th>Nutrient Values</th>
+    </tr>
+
+    {% for ingredient in ingredients %}
+        <tr>
+            <td>{{ ingredient.ingredient }}</td>
+            <td>{{ ingredient.cost }}</td>
+            <td>{{ ingredient.minquantity }}</td>
+            <td>{{ ingredient.maxquantity|default:"-" }}</td>
+            <td>
+                {% for nv in ingredient.nutrient_values.all %}
+                    {{ nv.nutrient.name }}: {{ nv.value }}{{ nv.nutrient.unit }}<br>
+                {% empty %}
+                    No nutrient values
+                {% endfor %}
+            </td>
+        </tr>
+    {% empty %}
+        <tr>
+            <td colspan="5">No ingredients added for this formula.</td>
+        </tr>
+    {% endfor %}
+</table>
+
+<hr>
+
+<h2>Nutrient Constraints</h2>
+
+<table border="1" cellpadding="8">
+    <tr>
+        <th>Nutrient</th>
+        <th>Unit</th>
+        <th>Min</th>
+        <th>Max</th>
+    </tr>
+
+    {% for constraint in nutrient_constraints %}
+        <tr>
+            <td>{{ constraint.nutrient.name }}</td>
+            <td>{{ constraint.nutrient.unit }}</td>
+            <td>{{ constraint.min_value|default:"-" }}</td>
+            <td>{{ constraint.max_value|default:"-" }}</td>
+        </tr>
+    {% empty %}
+        <tr>
+            <td colspan="4">No nutrient constraints added for this formula.</td>
+        </tr>
+    {% endfor %}
+</table>
+
+<hr>
+
+<form method="post">
+    {% csrf_token %}
+    <button type="submit">Run Optimization</button>
+    {% if status %}
+    <h2>Status: {{ status }}</h2>
+{% endif %}
+{% if total_cost %}
+    <h2>Total Cost: {{ total_cost }}</h2>
+{% endif %}
+
+{% if optimized_ingredients %}
+    <h2>Optimized Ingredients</h2>
+    <table border="1" cellpadding="8">
+        <tr>
+            <th>Ingredient</th>
+            <th>Quantity</th>
+            <th>Cost/kg</th>
+            <th>Total Cost</th>
+            <th> Max Quantity</th>
+            <th>Min Quantity</th>
+        </tr>
+        {% for item in optimized_ingredients %}
+        <tr>
+            <td>{{ item.name }}</td>
+            <td>{{ item.quantity }}</td>
+            <td>{{ item.cost_per_kg }}</td>
+            <td>{{ item.total_cost }}</td>
+            <td>{{ item.minquantity}}</td>
+            <td>{{ item.maxquantity|default:"-"}}</td>
+            
+        </tr>
+        {% endfor %}
+    </table>
+{% endif %}
+
+{% if achieved_nutrients %}
+    <h2>Achieved Nutrients</h2>
+    <table border="1" cellpadding="8">
+        <tr>
+            <th>Nutrient</th>
+            <th>Achieved</th>
+            <th>Min</th>
+            <th>Max</th>
+        </tr>
+        {% for item in achieved_nutrients %}
+        <tr>
+            <td>{{ item.name }}</td>
+            <td>{{ item.achieved }}</td>
+            <td>{{ item.min }}</td>
+            <td>{{ item.max }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+{% endif %}
+</form>
