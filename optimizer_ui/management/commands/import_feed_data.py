@@ -1,137 +1,141 @@
-from pathlib import Path
-
 import pandas as pd
-from django.conf import settings
+
 from django.core.management.base import BaseCommand, CommandError
 from django.db import transaction
 
-from core.loader import load_csv
 from optimizer_ui.models import (
+    Company,
+    Plant,
+    Formula,
     Ingredient,
-    IngredientNutrient,
     Nutrient,
+    IngredientNutrient,
     NutrientConstraint,
 )
 
 
-BASE_INGREDIENT_COLUMNS = {
-    "ingredient",
-    "cost",
-    "minquantity",
-    "maxquantity",
-    "currentquantity",
-}
-
-
 class Command(BaseCommand):
-    help = "Import ingredient composition and nutrient constraints from CSV files."
+    help = "Import feed ingredients and nutrient constraints from CSV files."
 
     def add_arguments(self, parser):
-        parser.add_argument(
-            "--ingredients",
-            default="data/ingredients.csv",
-            help="Ingredient CSV path relative to the project root.",
-        )
-        parser.add_argument(
-            "--constraints",
-            default="data/sample_constraints.csv",
-            help="Constraint CSV path relative to the project root.",
-        )
+        parser.add_argument("--ingredients", default="data/ingredients.csv")
+        parser.add_argument("--constraints", default="data/constraints.csv")
+        parser.add_argument("--company", required=True)
+        parser.add_argument("--plant", required=True)
+        parser.add_argument("--formula", required=True)
+        parser.add_argument("--location", default="")
 
-    @transaction.atomic
     def handle(self, *args, **options):
-        ingredients_path = self._resolve_path(options["ingredients"])
-        constraints_path = self._resolve_path(options["constraints"])
+        ingredients_path = options["ingredients"]
+        constraints_path = options["constraints"]
 
-        if not ingredients_path.exists():
-            raise CommandError(f"Ingredient file not found: {ingredients_path}")
-        if not constraints_path.exists():
-            raise CommandError(f"Constraint file not found: {constraints_path}")
+        company_name = options["company"]
+        plant_name = options["plant"]
+        formula_name = options["formula"]
+        location = options["location"]
 
-        ingredients = load_csv(ingredients_path)
-        constraints = load_csv(constraints_path)
-        self._validate_columns(ingredients, constraints)
+        ingredients_df = pd.read_csv(ingredients_path)
+        constraints_df = pd.read_csv(constraints_path)
 
-        nutrient_columns = [
-            column for column in ingredients.columns if column not in BASE_INGREDIENT_COLUMNS
-        ]
-        nutrients = {
-            column: Nutrient.objects.get_or_create(name=column)[0]
-            for column in nutrient_columns
-        }
+        ingredients_df.columns = ingredients_df.columns.str.strip().str.lower()
+        constraints_df.columns = constraints_df.columns.str.strip().str.lower()
 
-        ingredient_count = 0
-        nutrient_value_count = 0
-        for _, row in ingredients.iterrows():
-            ingredient_name = str(row["ingredient"]).strip()
-            ingredient, _ = Ingredient.objects.update_or_create(
-                ingredient=ingredient_name,
-                defaults={
-                    "cost": self._value_or_none(row["cost"]),
-                    "minquantity": self._value_or_default(row["minquantity"], 0),
-                    "maxquantity": self._value_or_none(row["maxquantity"]),
-                },
-            )
-            ingredient_count += 1
-
-            for nutrient_name, nutrient in nutrients.items():
-                value = row[nutrient_name]
-                if pd.isna(value):
-                    IngredientNutrient.objects.filter(
-                        ingredient=ingredient,
-                        nutrient=nutrient,
-                    ).delete()
-                    continue
-                IngredientNutrient.objects.update_or_create(
-                    ingredient=ingredient,
-                    nutrient=nutrient,
-                    defaults={"value": value},
-                )
-                nutrient_value_count += 1
-
-        constraint_count = 0
-        for _, row in constraints.iterrows():
-            nutrient_name = str(row["nutrient"]).strip().lower()
-            nutrient, _ = Nutrient.objects.get_or_create(name=nutrient_name)
-            constraint, _ = NutrientConstraint.objects.get_or_create(nutrient=nutrient)
-            constraint.min = self._value_or_none(row["min"])
-            constraint.max = self._value_or_none(row["max"])
-            constraint.save(update_fields=["min", "max"])
-            constraint_count += 1
-
-        self.stdout.write(
-            self.style.SUCCESS(
-                "Imported "
-                f"{ingredient_count} ingredients, "
-                f"{len(nutrients)} nutrients, "
-                f"{nutrient_value_count} nutrient values, and "
-                f"{constraint_count} active constraints."
-            )
-        )
-
-    def _resolve_path(self, path_value):
-        path = Path(path_value)
-        if not path.is_absolute():
-            path = Path(settings.BASE_DIR) / path
-        return path
-
-    def _validate_columns(self, ingredients, constraints):
         required_ingredient_columns = {"ingredient", "cost", "minquantity", "maxquantity"}
-        missing_ingredients = required_ingredient_columns - set(ingredients.columns)
-        if missing_ingredients:
+        missing_ingredient_columns = required_ingredient_columns - set(ingredients_df.columns)
+
+        if missing_ingredient_columns:
             raise CommandError(
-                f"Ingredients CSV is missing columns: {sorted(missing_ingredients)}"
+                f"Ingredients CSV is missing columns: {sorted(missing_ingredient_columns)}"
             )
 
         required_constraint_columns = {"nutrient", "min", "max"}
-        missing_constraints = required_constraint_columns - set(constraints.columns)
-        if missing_constraints:
+        missing_constraint_columns = required_constraint_columns - set(constraints_df.columns)
+
+        if missing_constraint_columns:
             raise CommandError(
-                f"Constraints CSV is missing columns: {sorted(missing_constraints)}"
+                f"Constraints CSV is missing columns: {sorted(missing_constraint_columns)}"
             )
 
-    def _value_or_none(self, value):
-        return None if pd.isna(value) else value
+        nutrient_columns = [
+            col for col in ingredients_df.columns
+            if col not in ["ingredient", "cost", "minquantity", "maxquantity"]
+        ]
 
-    def _value_or_default(self, value, default):
-        return default if pd.isna(value) else value
+        with transaction.atomic():
+            company, _ = Company.objects.get_or_create(name=company_name)
+
+            plant, _ = Plant.objects.get_or_create(
+                company=company,
+                name=plant_name,
+                defaults={"location": location},
+            )
+
+            formula, _ = Formula.objects.get_or_create(
+                plant=plant,
+                name=formula_name,
+            )
+
+            nutrient_objects = {}
+
+            for nutrient_name in nutrient_columns:
+                nutrient, _ = Nutrient.objects.get_or_create(
+                    name=nutrient_name.upper(),
+                    defaults={"unit": "%"},
+                )
+                nutrient_objects[nutrient_name] = nutrient
+
+            for _, row in constraints_df.iterrows():
+                nutrient_name = str(row["nutrient"]).strip().lower()
+
+                nutrient, _ = Nutrient.objects.get_or_create(
+                    name=nutrient_name.upper(),
+                    defaults={"unit": "%"},
+                )
+
+                NutrientConstraint.objects.update_or_create(
+                    formula=formula,
+                    nutrient=nutrient,
+                    defaults={
+                        "min_value": None if pd.isna(row["min"]) else row["min"],
+                        "max_value": None if pd.isna(row["max"]) else row["max"],
+                    },
+                )
+
+            for _, row in ingredients_df.iterrows():
+                ingredient_name = str(row["ingredient"]).strip()
+
+                ingredient, _ = Ingredient.objects.update_or_create(
+                    formula=formula,
+                    ingredient=ingredient_name,
+                    defaults={
+                        "cost": None if pd.isna(row["cost"]) else row["cost"],
+                        "minquantity": 0 if pd.isna(row["minquantity"]) else row["minquantity"],
+                        "maxquantity": None if pd.isna(row["maxquantity"]) else row["maxquantity"],
+                    },
+                )
+
+                for nutrient_column in nutrient_columns:
+                    value = row[nutrient_column]
+
+                    if pd.isna(value):
+                        continue
+
+                    nutrient = nutrient_objects.get(nutrient_column)
+
+                    if nutrient is None:
+                        nutrient, _ = Nutrient.objects.get_or_create(
+                            name=nutrient_column.upper(),
+                            defaults={"unit": "%"},
+                        )
+
+                    IngredientNutrient.objects.update_or_create(
+                        ingredient=ingredient,
+                        nutrient=nutrient,
+                        defaults={"value": value},
+                    )
+
+        self.stdout.write(
+            self.style.SUCCESS(
+                f"Imported data for {company_name} → {plant_name} → {formula_name}"
+            )
+        )

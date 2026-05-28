@@ -31,3 +31,5 @@ class NutrientConstraintAdmin(admin.ModelAdmin):
 admin.site.register(Formula)
 admin.site.register(Plant)
 admin.site.register(Company)
+admin.site.register(OptimizationRun)
+admin.site.register(OptimizationResultItem)

@@ -1,6 +1,9 @@
-<a href="{% url 'optimizer_ui:formula_list' plant.id %}">← Back to Formulas</a>
+<a href="{% url 'optimizer_ui:formula_list' plant.id %}">
+    ← Back to Formulas
+</a>
 
 <h1>{{ formula.name }}</h1>
+
 <p>Plant: {{ plant.name }}</p>
 <p>Company: {{ plant.company.name }}</p>
 
@@ -23,17 +26,23 @@
             <td>{{ ingredient.cost }}</td>
             <td>{{ ingredient.minquantity }}</td>
             <td>{{ ingredient.maxquantity|default:"-" }}</td>
+
             <td>
                 {% for nv in ingredient.nutrient_values.all %}
-                    {{ nv.nutrient.name }}: {{ nv.value }}{{ nv.nutrient.unit }}<br>
+                    {{ nv.nutrient.name }}:
+                    {{ nv.value }}{{ nv.nutrient.unit }}
+                    <br>
                 {% empty %}
                     No nutrient values
                 {% endfor %}
             </td>
         </tr>
+
     {% empty %}
         <tr>
-            <td colspan="5">No ingredients added for this formula.</td>
+            <td colspan="5">
+                No ingredients added for this formula.
+            </td>
         </tr>
     {% endfor %}
 </table>
@@ -57,9 +66,12 @@
             <td>{{ constraint.min_value|default:"-" }}</td>
             <td>{{ constraint.max_value|default:"-" }}</td>
         </tr>
+
     {% empty %}
         <tr>
-            <td colspan="4">No nutrient constraints added for this formula.</td>
+            <td colspan="4">
+                No nutrient constraints added for this formula.
+            </td>
         </tr>
     {% endfor %}
 </table>
@@ -68,56 +80,120 @@
 
 <form method="post">
     {% csrf_token %}
-    <button type="submit">Run Optimization</button>
-    {% if status %}
+
+    <button type="submit">
+        Run Optimization
+    </button>
+</form>
+
+{% if status %}
     <h2>Status: {{ status }}</h2>
 {% endif %}
+
 {% if total_cost %}
     <h2>Total Cost: {{ total_cost }}</h2>
 {% endif %}
 
+{% if saved_run %}
+    <p>
+        Saved Run ID: {{ saved_run.id }}
+    </p>
+{% endif %}
+
+{% if previous_cost %}
+    <hr>
+
+    <h2>Cost Comparison</h2>
+
+    <p>
+        <strong>Previous Cost:</strong>
+        {{ previous_cost }}
+    </p>
+
+    <p>
+        <strong>Current Cost:</strong>
+        {{ total_cost }}
+    </p>
+
+    <p>
+        <strong>Difference:</strong>
+        {{ cost_difference }}
+    </p>
+
+    <p>
+        <strong>Difference (%):</strong>
+        {{ cost_difference_percentage }}%
+    </p>
+{% endif %}
+
 {% if optimized_ingredients %}
+
+    <hr>
+
     <h2>Optimized Ingredients</h2>
+
     <table border="1" cellpadding="8">
+
         <tr>
             <th>Ingredient</th>
             <th>Quantity</th>
             <th>Cost/kg</th>
             <th>Total Cost</th>
-            <th> Max Quantity</th>
             <th>Min Quantity</th>
+            <th>Max Quantity</th>
+            <th>Sensitivity</th>
+            <th>Cost/Unit Difference for 1kg change</th>
         </tr>
+
         {% for item in optimized_ingredients %}
+
         <tr>
             <td>{{ item.name }}</td>
             <td>{{ item.quantity }}</td>
             <td>{{ item.cost_per_kg }}</td>
             <td>{{ item.total_cost }}</td>
-            <td>{{ item.minquantity}}</td>
-            <td>{{ item.maxquantity|default:"-"}}</td>
-            
+            <td>{{ item.minquantity }}</td>
+            <td>{{ item.maxquantity|default:"-" }}</td>
+            <td>{{ item.sensitivity|default:"-" }}</td>
+            <td>{{ item.cost_difference_for_change|default:"-" }}</td>
         </tr>
+
         {% endfor %}
+
     </table>
+
 {% endif %}
 
 {% if achieved_nutrients %}
+
+    <hr>
+
     <h2>Achieved Nutrients</h2>
+
     <table border="1" cellpadding="8">
+
         <tr>
             <th>Nutrient</th>
             <th>Achieved</th>
             <th>Min</th>
             <th>Max</th>
+            <th>Sensitivity</th>
+            <th>Cost/Unit Difference for 1% change</th>
         </tr>
+
         {% for item in achieved_nutrients %}
+
         <tr>
             <td>{{ item.name }}</td>
             <td>{{ item.achieved }}</td>
             <td>{{ item.min }}</td>
             <td>{{ item.max }}</td>
+            <td>{{ item.sensitivity|default:"-" }}</td>
+            <td>{{ item.cost_difference_for_change|default:"-" }}</td>
         </tr>
+
         {% endfor %}
+
     </table>
+
 {% endif %}
-</form>
