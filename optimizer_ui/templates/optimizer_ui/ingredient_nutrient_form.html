@@ -1,0 +1,18 @@
+<h1>{{ title }}</h1>
+
+<p>
+    Ingredient: <strong>{{ ingredient.ingredient }}</strong>
+</p>
+
+<form method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+
+    <button type="submit">Save</button>
+</form>
+
+<br>
+
+<a href="{% url 'optimizer_ui:ingredient_nutrient_list' ingredient.id %}">
+    ← Back to Nutrient Values
+</a>

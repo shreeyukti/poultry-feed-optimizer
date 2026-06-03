@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>{{ title }}</title>
+</head>
+<body>
+
+<h1>{{ title }}</h1>
+
+<p>Formula: <strong>{{ formula.name }}</strong></p>
+
+<form method="POST">
+    {% csrf_token %}
+    {{ form.as_p }}
+
+    <button type="submit">Save Nutrient</button>
+</form>
+
+<br>
+
+<a href="{% url 'optimizer_ui:formula_detail' formula.id %}">
+    Back to Formula
+</a>
+
+</body>
+</html>

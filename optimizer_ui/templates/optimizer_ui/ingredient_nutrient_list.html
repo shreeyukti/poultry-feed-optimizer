@@ -1,0 +1,43 @@
+<h1>{{ ingredient.ingredient }} Nutrient Values</h1>
+
+<p>
+    Formula: {{ formula.name }}
+</p>
+
+<p>
+    <a href="{% url 'optimizer_ui:ingredient_nutrient_create' ingredient.id %}">
+        Add Nutrient Value
+    </a>
+</p>
+
+<table border="1" cellpadding="6" cellspacing="0">
+    <tr>
+        <th>Nutrient</th>
+        <th>Value</th>
+        <th>Unit</th>
+        <th>Action</th>
+    </tr>
+
+    {% for value in nutrient_values %}
+    <tr>
+        <td>{{ value.nutrient.name }}</td>
+        <td>{{ value.value }}</td>
+        <td>{{ value.nutrient.unit }}</td>
+        <td>
+            <a href="{% url 'optimizer_ui:ingredient_nutrient_update' value.id %}">Edit</a>
+            |
+            <a href="{% url 'optimizer_ui:ingredient_nutrient_delete' value.id %}">Delete</a>
+        </td>
+    </tr>
+    {% empty %}
+    <tr>
+        <td colspan="4">No nutrient values added for this ingredient.</td>
+    </tr>
+    {% endfor %}
+</table>
+
+<br>
+
+<a href="{% url 'optimizer_ui:formula_detail' formula.id %}">
+    ← Back to Formula Workspace
+</a>

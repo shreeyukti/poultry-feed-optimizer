@@ -1,0 +1,69 @@
+<h1>Optimization Run Detail</h1>
+
+<p><strong>Formula:</strong> {{ run.formula.name }}</p>
+<p><strong>Plant:</strong> {{ run.formula.plant.name }}</p>
+<p><strong>Status:</strong> {{ run.status }}</p>
+<p><strong>Total Cost:</strong> {{ run.total_cost }}</p>
+<p><strong>Date:</strong> {{ run.created_at }}</p>
+
+<hr>
+
+<h2>Ingredient Snapshot</h2>
+
+<table border="1" cellpadding="6" cellspacing="0">
+    <tr>
+        <th>Ingredient</th>
+        <th>Solution Kg</th>
+        <th>Cost/Kg</th>
+        <th>Total Cost</th>
+        <th>Min Kg</th>
+        <th>Max Kg</th>
+    </tr>
+
+    {% for row in ingredient_snapshots %}
+    <tr>
+        <td>{{ row.ingredient_name }}</td>
+        <td>{{ row.solution_kg }}</td>
+        <td>{{ row.cost_per_kg }}</td>
+        <td>{{ row.total_cost }}</td>
+        <td>{{ row.minquantity }}</td>
+        <td>{{ row.maxquantity }}</td>
+    </tr>
+    {% empty %}
+    <tr>
+        <td colspan="6">No ingredient snapshot saved.</td>
+    </tr>
+    {% endfor %}
+</table>
+
+<br>
+
+<h2>Nutrient Snapshot</h2>
+
+<table border="1" cellpadding="6" cellspacing="0">
+    <tr>
+        <th>Nutrient</th>
+        <th>Actual</th>
+        <th>Min</th>
+        <th>Max</th>
+    </tr>
+
+    {% for row in nutrient_snapshots %}
+    <tr>
+        <td>{{ row.nutrient_name }}</td>
+        <td>{{ row.actual_value }}</td>
+        <td>{{ row.min_value }}</td>
+        <td>{{ row.max_value }}</td>
+    </tr>
+    {% empty %}
+    <tr>
+        <td colspan="4">No nutrient snapshot saved.</td>
+    </tr>
+    {% endfor %}
+</table>
+
+<br>
+
+<a href="{% url 'optimizer_ui:optimization_run_list' %}">
+    ← Back to History
+</a>

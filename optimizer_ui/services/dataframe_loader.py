@@ -1,6 +1,7 @@
 import pandas as pd
 
 from optimizer_ui.models import Nutrient
+from optimizer_ui.services.nutrition_service import NutritionService
 
 
 def _normalize_nutrient_name(name):
@@ -11,18 +12,24 @@ def load_optimization_dataframes(formula=None):
     """
     Convert relational formulation data into tabular optimizer input.
 
-    If formula is provided, load only:
-    - ingredients under that formula
-    - nutrient constraints under that formula
+    Uses:
+    - formula ingredients for cost/min/max
+    - IngredientMaster connection for nutrient values
+    - Plant-specific overlay if available
+    - Base nutrient value if no overlay exists
+    - Old IngredientNutrient values as fallback
     """
 
     if formula is None:
         raise ValueError("formula is required. Load data for one selected formula only.")
 
-    nutrients = list(
-        Nutrient.objects.order_by("name").values_list("name", flat=True)
-    )
-    nutrient_columns = [_normalize_nutrient_name(name) for name in nutrients]
+    plant = formula.plant
+
+    nutrient_objects = list(Nutrient.objects.order_by("name"))
+    nutrient_columns = [
+        _normalize_nutrient_name(nutrient.name)
+        for nutrient in nutrient_objects
+    ]
 
     ingredient_columns = [
         "ingredient",
@@ -36,6 +43,7 @@ def load_optimization_dataframes(formula=None):
 
     ingredient_queryset = (
         formula.ingredients
+        .select_related("ingredient_master")
         .prefetch_related("nutrient_values__nutrient")
         .order_by("ingredient")
     )
@@ -48,11 +56,26 @@ def load_optimization_dataframes(formula=None):
             "maxquantity": ingredient.maxquantity,
         }
 
-        for nutrient_value in ingredient.nutrient_values.all():
-            nutrient_name = _normalize_nutrient_name(
-                nutrient_value.nutrient.name
-            )
-            row[nutrient_name] = nutrient_value.value
+        # New architecture:
+        # IngredientMaster -> Base nutrient values -> Plant overlay
+        if ingredient.ingredient_master:
+            for nutrient in nutrient_objects:
+                nutrient_name = _normalize_nutrient_name(nutrient.name)
+
+                row[nutrient_name] = NutritionService.get_effective_value(
+                    plant=plant,
+                    ingredient_master=ingredient.ingredient_master,
+                    nutrient=nutrient,
+                )
+
+        # Old fallback:
+        # Formula-specific IngredientNutrient values
+        else:
+            for nutrient_value in ingredient.nutrient_values.all():
+                nutrient_name = _normalize_nutrient_name(
+                    nutrient_value.nutrient.name
+                )
+                row[nutrient_name] = nutrient_value.value
 
         ingredient_rows.append(row)
 

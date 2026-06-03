@@ -1,0 +1,37 @@
+<h1>Optimization History</h1>
+
+<table border="1" cellpadding="6" cellspacing="0">
+    <tr>
+        <th>Date</th>
+        <th>Formula</th>
+        <th>Plant</th>
+        <th>Status</th>
+        <th>Total Cost</th>
+        <th>Action</th>
+    </tr>
+
+    {% for run in runs %}
+    <tr>
+        <td>{{ run.created_at }}</td>
+        <td>{{ run.formula.name }}</td>
+        <td>{{ run.formula.plant.name }}</td>
+        <td>{{ run.status }}</td>
+        <td>{{ run.total_cost }}</td>
+        <td>
+            <a href="{% url 'optimizer_ui:optimization_run_detail' run.id %}">
+                View
+            </a>
+        </td>
+    </tr>
+    {% empty %}
+    <tr>
+        <td colspan="6">No optimization runs found.</td>
+    </tr>
+    {% endfor %}
+</table>
+
+<br>
+
+<a href="{% url 'optimizer_ui:dashboard' %}">
+    ← Back to Dashboard
+</a>

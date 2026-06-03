@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Dashboard</title>
+</head>
+<body>
+
+    <h1>Feed Optimization Dashboard</h1>
+
+    <p>Welcome, {{ request.user.username }}</p>
+
+    <hr>
+
+    <h2>Summary</h2>
+
+    <p><strong>Total Plants:</strong> {{ total_plants }}</p>
+    <p><strong>Total Formulas:</strong> {{ total_formulas }}</p>
+    <p><strong>Total Optimization Runs:</strong> {{ total_runs }}</p>
+
+    <hr>
+
+    <h2>Quick Actions</h2>
+
+    <p>
+        <a href="{% url 'optimizer_ui:plant_list' %}">View Plants</a>
+    </p>
+
+    <p>
+        <a href="{% url 'optimizer_ui:logout' %}">Logout</a>
+    </p>
+
+    <hr>
+<h2>Maintenance</h2>
+
+<a href="{% url 'optimizer_ui:maintenance_home' %}">
+    Open Maintenance
+</a>
+<hr>
+    <h2>Recent Optimization Runs</h2>
+
+    {% if recent_runs %}
+        <table border="1" cellpadding="8">
+            <tr>
+                <th>Formula</th>
+                <th>Plant</th>
+                <th>Status</th>
+                <th>Total Cost</th>
+                <th>Date</th>
+            </tr>
+
+            {% for run in recent_runs %}
+            <tr>
+                <td>{{ run.formula.name }}</td>
+                <td>{{ run.formula.plant.name }}</td>
+                <td>{{ run.status }}</td>
+                <td>{{ run.total_cost }}</td>
+                <td>{{ run.created_at }}</td>
+            </tr>
+            {% endfor %}
+        </table>
+    {% else %}
+        <p>No optimization runs yet.</p>
+    {% endif %}
+<p>
+    <a href="{% url 'optimizer_ui:optimization_run_list' %}">
+        View Optimization History
+    </a>
+</p>
+</body>
+</html>

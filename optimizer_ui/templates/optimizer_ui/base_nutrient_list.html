@@ -1,0 +1,39 @@
+<h1>{{ ingredient.name }} - Base Nutrient Values</h1>
+
+<p>
+    <a href="{% url 'optimizer_ui:base_nutrient_create' ingredient.id %}">
+        Add Base Nutrient Value
+    </a>
+</p>
+
+<table border="1" cellpadding="6" cellspacing="0">
+    <tr>
+        <th>Nutrient</th>
+        <th>Value</th>
+        <th>Unit</th>
+        <th>Action</th>
+    </tr>
+
+    {% for value in values %}
+    <tr>
+        <td>{{ value.nutrient.name }}</td>
+        <td>{{ value.value }}</td>
+        <td>{{ value.nutrient.unit }}</td>
+        <td>
+            <a href="{% url 'optimizer_ui:base_nutrient_update' value.id %}">Edit</a>
+            |
+            <a href="{% url 'optimizer_ui:base_nutrient_delete' value.id %}">Delete</a>
+        </td>
+    </tr>
+    {% empty %}
+    <tr>
+        <td colspan="4">No base nutrient values added.</td>
+    </tr>
+    {% endfor %}
+</table>
+
+<br>
+
+<a href="{% url 'optimizer_ui:ingredient_master_list' %}">
+    ← Back to Ingredients
+</a>

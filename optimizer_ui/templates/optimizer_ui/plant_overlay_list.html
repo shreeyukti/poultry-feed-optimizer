@@ -1,0 +1,53 @@
+<h1>{{ plant.name }} - Overlays</h1>
+
+<p>
+    Plant-specific nutrient overrides.
+</p>
+
+<a href="{% url 'optimizer_ui:plant_overlay_create' plant.id %}">
+    + Add Overlay
+</a>
+
+<br><br>
+
+<table border="1" cellpadding="6" cellspacing="0">
+    <tr>
+        <th>Ingredient</th>
+        <th>Nutrient</th>
+        <th>Value</th>
+        <th>Actions</th>
+    </tr>
+
+    {% for overlay in overlays %}
+    <tr>
+        <td>{{ overlay.ingredient_master.name }}</td>
+        <td>{{ overlay.nutrient.name }}</td>
+        <td>{{ overlay.value }}</td>
+
+        <td>
+            <a href="{% url 'optimizer_ui:plant_overlay_update' overlay.id %}">
+                Edit
+            </a>
+
+            |
+
+            <a href="{% url 'optimizer_ui:plant_overlay_delete' overlay.id %}">
+                Delete
+            </a>
+        </td>
+    </tr>
+
+    {% empty %}
+    <tr>
+        <td colspan="4">
+            No overlays defined.
+        </td>
+    </tr>
+    {% endfor %}
+</table>
+
+<br>
+
+<a href="{% url 'optimizer_ui:plant_list' %}">
+    ← Back to Plants
+</a>

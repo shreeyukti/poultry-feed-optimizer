@@ -1,0 +1,19 @@
+<h1>Delete Base Nutrient Value</h1>
+
+<p>
+    Are you sure you want to delete
+    <strong>{{ value.nutrient.name }}</strong>
+    for
+    <strong>{{ ingredient.name }}</strong>?
+</p>
+
+<form method="post">
+    {% csrf_token %}
+    <button type="submit">Yes, Delete</button>
+</form>
+
+<br>
+
+<a href="{% url 'optimizer_ui:base_nutrient_list' ingredient.id %}">
+    Cancel
+</a>

@@ -1,0 +1,18 @@
+<h1>Delete Requirement</h1>
+
+<p>
+    Are you sure you want to delete
+    <strong>{{ constraint.nutrient.name }}</strong>
+    from this formula?
+</p>
+
+<form method="POST">
+    {% csrf_token %}
+    <button type="submit">Delete</button>
+</form>
+
+<br>
+
+<a href="{% url 'optimizer_ui:formula_detail' constraint.formula.id %}">
+    Cancel
+</a>

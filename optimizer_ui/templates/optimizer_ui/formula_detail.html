@@ -1,90 +1,23 @@
-<a href="{% url 'optimizer_ui:formula_list' plant.id %}">
-    ← Back to Formulas
-</a>
+<a href="{% url 'optimizer_ui:formula_list' plant.id %}">← Back to Formulas</a>
 
-<h1>{{ formula.name }}</h1>
+<h1>Formula Workspace</h1>
 
-<p>Plant: {{ plant.name }}</p>
-<p>Company: {{ plant.company.name }}</p>
+<div style="border:1px solid #ccc; padding:12px; margin-bottom:12px;">
+    <strong>Plant:</strong> {{ plant.name }} |
+    <strong>Company:</strong> {{ plant.company.name }} |
+    <strong>Formula:</strong> {{ formula.name }}
+</div>
 
-<hr>
+<div style="margin-bottom:15px;">
+    <form method="post" style="display:inline;">
+        {% csrf_token %}
+        <button type="submit" name="optimize">Optimize</button>
+    </form>
 
-<h2>Ingredients</h2>
-
-<table border="1" cellpadding="8">
-    <tr>
-        <th>Ingredient</th>
-        <th>Cost</th>
-        <th>Min Qty</th>
-        <th>Max Qty</th>
-        <th>Nutrient Values</th>
-    </tr>
-
-    {% for ingredient in ingredients %}
-        <tr>
-            <td>{{ ingredient.ingredient }}</td>
-            <td>{{ ingredient.cost }}</td>
-            <td>{{ ingredient.minquantity }}</td>
-            <td>{{ ingredient.maxquantity|default:"-" }}</td>
-
-            <td>
-                {% for nv in ingredient.nutrient_values.all %}
-                    {{ nv.nutrient.name }}:
-                    {{ nv.value }}{{ nv.nutrient.unit }}
-                    <br>
-                {% empty %}
-                    No nutrient values
-                {% endfor %}
-            </td>
-        </tr>
-
-    {% empty %}
-        <tr>
-            <td colspan="5">
-                No ingredients added for this formula.
-            </td>
-        </tr>
-    {% endfor %}
-</table>
-
-<hr>
-
-<h2>Nutrient Constraints</h2>
-
-<table border="1" cellpadding="8">
-    <tr>
-        <th>Nutrient</th>
-        <th>Unit</th>
-        <th>Min</th>
-        <th>Max</th>
-    </tr>
-
-    {% for constraint in nutrient_constraints %}
-        <tr>
-            <td>{{ constraint.nutrient.name }}</td>
-            <td>{{ constraint.nutrient.unit }}</td>
-            <td>{{ constraint.min_value|default:"-" }}</td>
-            <td>{{ constraint.max_value|default:"-" }}</td>
-        </tr>
-
-    {% empty %}
-        <tr>
-            <td colspan="4">
-                No nutrient constraints added for this formula.
-            </td>
-        </tr>
-    {% endfor %}
-</table>
-
-<hr>
-
-<form method="post">
-    {% csrf_token %}
-
-    <button type="submit">
-        Run Optimization
-    </button>
-</form>
+    <button type="button">Sensitivity Analysis</button>
+    <button type="button">Mill Report</button>
+    <button type="button">Solution Report</button>
+</div>
 
 {% if status %}
     <h2>Status: {{ status }}</h2>
@@ -94,106 +27,191 @@
     <h2>Total Cost: {{ total_cost }}</h2>
 {% endif %}
 
-{% if saved_run %}
+<hr>
+
+<div style="display:flex; gap:20px; align-items:flex-start;">
+
+    <div style="width:58%;">
+        <h2>Ingredients / Raw Materials</h2>
+
+        <p>
+            <a href="{% url 'optimizer_ui:ingredient_create' formula.id %}">
+                Add Ingredient
+            </a>
+        </p>
+
+        <form method="POST">
+            {% csrf_token %}
+
+            <table border="1" cellpadding="6" cellspacing="0" width="100%">
+                <tr>
+                    <th>Ingredient</th>
+                    <th>Solution Kg</th>
+                    <th>Price</th>
+                    <th>Total Cost</th>
+                    <th>Min Kg</th>
+                    <th>Max Kg</th>
+                    <th>Sensitivity</th>
+                    <th>Cost/Unit Change</th>
+                    <th>Action</th>
+                </tr>
+
+                {% for row in ingredient_rows %}
+                    <tr>
+                        <td>
+                            <a href="{% url 'optimizer_ui:ingredient_nutrient_list' row.obj.id %}">
+                                {{ row.obj.ingredient }}
+                            </a>
+                        </td>
+                        <td>{{ row.solution }}</td>
+
+                        <td>
+                            <input
+                                type="number"
+                                step="0.001"
+                                name="cost_{{ row.obj.id }}"
+                                value="{{ row.price|default:'' }}"
+                                style="width:80px;"
+                            >
+                        </td>
+
+                        <td>{{ row.total_cost }}</td>
+
+                        <td>
+                            <input
+                                type="number"
+                                step="0.001"
+                                name="minquantity_{{ row.obj.id }}"
+                                value="{{ row.minquantity|default:'' }}"
+                                style="width:80px;"
+                            >
+                        </td>
+
+                        <td>
+                            <input
+                                type="number"
+                                step="0.001"
+                                name="maxquantity_{{ row.obj.id }}"
+                                value="{{ row.maxquantity|default:'' }}"
+                                style="width:80px;"
+                            >
+                        </td>
+
+                        <td>{{ row.sensitivity }}</td>
+                        <td>{{ row.cost_change }}</td>
+
+                        <td>
+                            <a href="{% url 'optimizer_ui:ingredient_delete' row.obj.id %}">
+                                Delete
+                            </a>
+                        </td>
+                    </tr>
+                {% empty %}
+                    <tr>
+                        <td colspan="9">No ingredients added.</td>
+                    </tr>
+                {% endfor %}
+            </table>
+
+            <br>
+
+            <button type="submit" name="save_ingredients">
+                Save Ingredient Changes
+            </button>
+        </form>
+    </div>
+
+    <div style="width:42%;">
+    <h2>Nutrient Requirements</h2>
+
     <p>
-        Saved Run ID: {{ saved_run.id }}
+        <a href="{% url 'optimizer_ui:nutrient_constraint_create' formula.id %}">
+            Add Requirement
+        </a>
     </p>
-{% endif %}
+
+    <form method="POST">
+        {% csrf_token %}
+
+        <table border="1" cellpadding="6" cellspacing="0" width="100%">
+            <tr>
+                <th>Nutrient</th>
+                <th>Actual</th>
+                <th>Min</th>
+                <th>Max</th>
+                <th>Sensitivity</th>
+                <th>Cost/1% Change</th>
+                <th>Action</th>
+            </tr>
+
+            {% for row in nutrient_rows %}
+                <tr>
+                    <td>{{ row.obj.nutrient.name }}</td>
+
+                    <td>{{ row.actual }}</td>
+
+                    <td>
+                        <input
+                            type="number"
+                            step="0.001"
+                            name="min_{{ row.obj.id }}"
+                            value="{{ row.min|default:'' }}"
+                            style="width:80px;"
+                        >
+                    </td>
+
+                    <td>
+                        <input
+                            type="number"
+                            step="0.001"
+                            name="max_{{ row.obj.id }}"
+                            value="{{ row.max|default:'' }}"
+                            style="width:80px;"
+                        >
+                    </td>
+
+                    <td>{{ row.sensitivity }}</td>
+
+                    <td>{{ row.cost_change }}</td>
+
+                    <td>
+                       <a href="{% url 'optimizer_ui:nutrient_constraint_delete' row.obj.id %}">
+                            Delete
+                       </a>
+                    </td>
+                </tr>
+
+            {% empty %}
+
+                <tr>
+                    <td colspan="7">
+                        No nutrient requirements added.
+                    </td>
+                </tr>
+
+            {% endfor %}
+
+        </table>
+
+        <br>
+
+        <button type="submit" name="save_requirements">
+            Save Nutrient Requirements
+        </button>
+
+    </form>
+
+</div>
+
+</div>
 
 {% if previous_cost %}
     <hr>
 
     <h2>Cost Comparison</h2>
 
-    <p>
-        <strong>Previous Cost:</strong>
-        {{ previous_cost }}
-    </p>
-
-    <p>
-        <strong>Current Cost:</strong>
-        {{ total_cost }}
-    </p>
-
-    <p>
-        <strong>Difference:</strong>
-        {{ cost_difference }}
-    </p>
-
-    <p>
-        <strong>Difference (%):</strong>
-        {{ cost_difference_percentage }}%
-    </p>
-{% endif %}
-
-{% if optimized_ingredients %}
-
-    <hr>
-
-    <h2>Optimized Ingredients</h2>
-
-    <table border="1" cellpadding="8">
-
-        <tr>
-            <th>Ingredient</th>
-            <th>Quantity</th>
-            <th>Cost/kg</th>
-            <th>Total Cost</th>
-            <th>Min Quantity</th>
-            <th>Max Quantity</th>
-            <th>Sensitivity</th>
-            <th>Cost/Unit Difference for 1kg change</th>
-        </tr>
-
-        {% for item in optimized_ingredients %}
-
-        <tr>
-            <td>{{ item.name }}</td>
-            <td>{{ item.quantity }}</td>
-            <td>{{ item.cost_per_kg }}</td>
-            <td>{{ item.total_cost }}</td>
-            <td>{{ item.minquantity }}</td>
-            <td>{{ item.maxquantity|default:"-" }}</td>
-            <td>{{ item.sensitivity|default:"-" }}</td>
-            <td>{{ item.cost_difference_for_change|default:"-" }}</td>
-        </tr>
-
-        {% endfor %}
-
-    </table>
-
-{% endif %}
-
-{% if achieved_nutrients %}
-
-    <hr>
-
-    <h2>Achieved Nutrients</h2>
-
-    <table border="1" cellpadding="8">
-
-        <tr>
-            <th>Nutrient</th>
-            <th>Achieved</th>
-            <th>Min</th>
-            <th>Max</th>
-            <th>Sensitivity</th>
-            <th>Cost/Unit Difference for 1% change</th>
-        </tr>
-
-        {% for item in achieved_nutrients %}
-
-        <tr>
-            <td>{{ item.name }}</td>
-            <td>{{ item.achieved }}</td>
-            <td>{{ item.min }}</td>
-            <td>{{ item.max }}</td>
-            <td>{{ item.sensitivity|default:"-" }}</td>
-            <td>{{ item.cost_difference_for_change|default:"-" }}</td>
-        </tr>
-
-        {% endfor %}
-
-    </table>
-
+    <p><strong>Previous Cost:</strong> {{ previous_cost }}</p>
+    <p><strong>Current Cost:</strong> {{ total_cost }}</p>
+    <p><strong>Difference:</strong> {{ cost_difference }}</p>
+    <p><strong>Difference (%):</strong> {{ cost_difference_percentage }}%</p>
 {% endif %}

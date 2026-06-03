@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Delete Formula</title>
+</head>
+<body>
+
+<h1>Delete Formula</h1>
+
+<p>
+    Are you sure you want to delete:
+    <strong>{{ formula.name }}</strong>?
+</p>
+
+<form method="POST">
+    {% csrf_token %}
+
+    <button type="submit">
+        Delete Formula
+    </button>
+</form>
+
+<br>
+
+<a href="{% url 'optimizer_ui:formula_list' formula.plant.id %}">
+    Cancel
+</a>
+
+</body>
+</html>

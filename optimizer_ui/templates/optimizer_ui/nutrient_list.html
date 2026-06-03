@@ -1,0 +1,37 @@
+<h1>Nutrients</h1>
+
+<p>
+    <a href="{% url 'optimizer_ui:nutrient_create' %}">
+        Add Nutrient
+    </a>
+</p>
+
+<table border="1" cellpadding="6" cellspacing="0">
+    <tr>
+        <th>Name</th>
+        <th>Unit</th>
+        <th>Action</th>
+    </tr>
+
+    {% for nutrient in nutrients %}
+    <tr>
+        <td>{{ nutrient.name }}</td>
+        <td>{{ nutrient.unit }}</td>
+        <td>
+            <a href="{% url 'optimizer_ui:nutrient_update' nutrient.id %}">Edit</a>
+            |
+            <a href="{% url 'optimizer_ui:nutrient_delete' nutrient.id %}">Delete</a>
+        </td>
+    </tr>
+    {% empty %}
+    <tr>
+        <td colspan="3">No nutrients added.</td>
+    </tr>
+    {% endfor %}
+</table>
+
+<br>
+
+<a href="{% url 'optimizer_ui:maintenance_home' %}">
+    ← Back to Maintenance
+</a>

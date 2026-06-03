@@ -1,0 +1,14 @@
+<h1>Delete Nutrient</h1>
+
+<p>Are you sure you want to delete "{{ nutrient.name }}"?</p>
+
+<form method="post">
+    {% csrf_token %}
+    <button type="submit">Yes, Delete</button>
+</form>
+
+<br>
+
+<a href="{% url 'optimizer_ui:nutrient_list' %}">
+    Cancel
+</a>

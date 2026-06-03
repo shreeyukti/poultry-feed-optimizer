@@ -4,3 +4,56 @@ __pycache__/
 db.sqlite3
 .env
 output/
+Current Architecture Decision (Confirmed)
+
+1. Nutrient values are NOT formula-specific.
+
+2. Nutrient values follow:
+
+Base Value
+↓
+Plant Overlay
+↓
+Stored/Effective Value
+
+Rule:
+
+If plant overlay exists:
+    use overlay value
+Else:
+    use base value
+
+3. Ingredient structure:
+
+IngredientMaster
+↓
+BaseIngredientNutrient
+↓
+PlantIngredientNutrientOverlay
+↓
+Formula Ingredient
+
+4. Formula stores:
+
+- Ingredient selection
+- Cost
+- Min quantity
+- Max quantity
+
+5. Formula does NOT store nutrient composition.
+
+6. Nutrient composition is maintained in Maintenance.
+
+7. Future cleanup:
+
+Current Ingredient model still contains:
+
+ingredient = CharField(...)
+
+for backward compatibility.
+
+After all screens are working:
+
+- migrate data
+- switch fully to IngredientMaster
+- remove ingredient CharField
