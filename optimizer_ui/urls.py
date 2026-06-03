@@ -145,4 +145,9 @@ path(
     views.plant_overlay_delete,
     name="plant_overlay_delete",
 ),
+path(
+    "maintenance/ingredients/<int:ingredient_id>/matrix/",
+    views.ingredient_nutrient_matrix,
+    name="ingredient_nutrient_matrix",
+),
 ]

@@ -1,11 +1,3 @@
-<h1>Ingredients</h1>
-
-<p>
-    <a href="{% url 'optimizer_ui:ingredient_master_create' %}">
-        Add Ingredient
-    </a>
-</p>
-
 <table border="1" cellpadding="6" cellspacing="0">
     <tr>
         <th>Name</th>
@@ -14,30 +6,29 @@
     </tr>
 
     {% for ingredient in ingredients %}
-<tr>
-    <td>
-        <a href="{% url 'optimizer_ui:base_nutrient_list' ingredient.id %}">
-            {{ ingredient.name }}
-        </a>
-    </td>
+    <tr>
+        <td>
+            <a href="{% url 'optimizer_ui:ingredient_nutrient_matrix' ingredient.id %}">
+                {{ ingredient.name }}
+            </a>
+        </td>
 
-    <td>{{ ingredient.description }}</td>
+        <td>{{ ingredient.description }}</td>
 
-    <td>
-        <a href="{% url 'optimizer_ui:ingredient_master_update' ingredient.id %}">
-            Edit
-        </a>
-        |
-        <a href="{% url 'optimizer_ui:ingredient_master_delete' ingredient.id %}">
-            Delete
-        </a>
-    </td>
-</tr>
-{% endfor %}
+        <td>
+            <a href="{% url 'optimizer_ui:ingredient_master_update' ingredient.id %}">
+                Edit
+            </a>
+            |
+            <a href="{% url 'optimizer_ui:ingredient_master_delete' ingredient.id %}">
+                Delete
+            </a>
+        </td>
+    </tr>
+
+    {% empty %}
+    <tr>
+        <td colspan="3">No ingredients added.</td>
+    </tr>
+    {% endfor %}
 </table>
-
-<br>
-
-<a href="{% url 'optimizer_ui:maintenance_home' %}">
-    ← Back to Maintenance
-</a>

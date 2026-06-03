@@ -828,3 +828,103 @@ def plant_overlay_delete(request, overlay_id):
         "overlay": overlay,
         "plant": overlay.plant,
     })
+@login_required
+def ingredient_nutrient_matrix(request, ingredient_id):
+    ingredient = get_object_or_404(
+        IngredientMaster,
+        id=ingredient_id
+    )
+
+    plants = Plant.objects.filter(
+        company__owner=request.user
+    ).order_by("name")
+
+    selected_plant_id = request.GET.get("plant")
+
+    selected_plant = None
+    if selected_plant_id:
+        selected_plant = get_object_or_404(
+            Plant,
+            id=selected_plant_id,
+            company__owner=request.user
+        )
+    else:
+        selected_plant = plants.first()
+
+    nutrients = Nutrient.objects.all().order_by("name")
+
+    base_values = {
+        item.nutrient_id: item
+        for item in BaseIngredientNutrient.objects.filter(
+            ingredient_master=ingredient
+        )
+    }
+
+    overlay_values = {}
+
+    if selected_plant:
+        overlay_values = {
+            item.nutrient_id: item
+            for item in PlantIngredientNutrientOverlay.objects.filter(
+                plant=selected_plant,
+                ingredient_master=ingredient
+            )
+        }
+
+    if request.method == "POST":
+        for nutrient in nutrients:
+            base_raw = request.POST.get(f"base_{nutrient.id}")
+            overlay_raw = request.POST.get(f"overlay_{nutrient.id}")
+
+            base_value = float(base_raw) if base_raw not in ["", None] else 0
+
+            BaseIngredientNutrient.objects.update_or_create(
+                ingredient_master=ingredient,
+                nutrient=nutrient,
+                defaults={"value": base_value}
+            )
+
+            if selected_plant:
+                if overlay_raw in ["", None]:
+                    PlantIngredientNutrientOverlay.objects.filter(
+                        plant=selected_plant,
+                        ingredient_master=ingredient,
+                        nutrient=nutrient
+                    ).delete()
+                else:
+                    PlantIngredientNutrientOverlay.objects.update_or_create(
+                        plant=selected_plant,
+                        ingredient_master=ingredient,
+                        nutrient=nutrient,
+                        defaults={"value": float(overlay_raw)}
+                    )
+
+        return redirect(
+            f"{request.path}?plant={selected_plant.id}"
+            if selected_plant else request.path
+        )
+
+    rows = []
+
+    for nutrient in nutrients:
+        base_obj = base_values.get(nutrient.id)
+        overlay_obj = overlay_values.get(nutrient.id)
+
+        base_value = base_obj.value if base_obj else 0
+        overlay_value = overlay_obj.value if overlay_obj else ""
+
+        effective_value = overlay_obj.value if overlay_obj else base_value
+
+        rows.append({
+            "nutrient": nutrient,
+            "base_value": base_value,
+            "overlay_value": overlay_value,
+            "effective_value": effective_value,
+        })
+
+    return render(request, "optimizer_ui/ingredient_nutrient_matrix.html", {
+        "ingredient": ingredient,
+        "plants": plants,
+        "selected_plant": selected_plant,
+        "rows": rows,
+    })
