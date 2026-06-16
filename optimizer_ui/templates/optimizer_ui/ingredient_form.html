@@ -1,26 +1,49 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>{{ title }}</title>
-</head>
-<body>
 
-    <h1>{{ title }}</h1>
+{% extends "optimizer_ui/base.html" %}
 
-    <p>Formula: <strong>{{ formula.name }}</strong></p>
+{% block title %}{{ title }} — NutriOpt{% endblock %}
+
+{% block nav_plants %}active{% endblock %}
+
+{% block content %}
+
+<div class="page-header-row">
+
+    <div class="page-header">
+        <h1>{{ title }}</h1>
+
+        <p>
+            Formula: <strong>{{ formula.name }}</strong>
+        </p>
+    </div>
+
+</div>
+
+<div class="card form-card">
 
     <form method="POST">
+
         {% csrf_token %}
+
         {{ form.as_p }}
 
-        <button type="submit">Save Ingredient</button>
+        <div class="form-actions">
+
+            <button type="submit" class="btn">
+                Save Ingredient
+            </button>
+
+            <a href="{% url 'optimizer_ui:formula_detail' formula.id %}"
+               class="btn btn-secondary">
+
+                Back to Formula
+
+            </a>
+
+        </div>
+
     </form>
 
-    <br>
+</div>
 
-    <a href="{% url 'optimizer_ui:formula_detail' formula.id %}">
-        Back to Formula
-    </a>
-
-</body>
-</html>
+{% endblock %}

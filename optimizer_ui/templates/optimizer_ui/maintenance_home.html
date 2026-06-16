@@ -1,19 +1,72 @@
-<h1>Maintenance</h1>
 
-<ul>
-    <li>
-        <a href="{% url 'optimizer_ui:nutrient_list' %}">
-            Nutrients
+{% load static %}
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Maintenance | NutriOpt</title>
+    <link rel="stylesheet" href="{% static 'optimizer_ui/css/style.css' %}">
+</head>
+
+<body class="maintenance-body">
+
+<div class="maintenance-shell">
+
+    <div class="maintenance-top">
+        <a href="{% url 'optimizer_ui:dashboard' %}" class="maintenance-back">
+            ← Back to Dashboard
         </a>
-    </li>
+    </div>
 
-    <li>
-        <a href="{% url 'optimizer_ui:ingredient_master_list' %}">
-            Ingredients
+    <section class="maintenance-hero">
+        <h1>Maintenance</h1>
+        <p>
+            Manage master data used across feed formulation and optimization workflows.
+        </p>
+    </section>
+
+    <section class="maintenance-panel">
+
+        <a href="{% url 'optimizer_ui:nutrient_list' %}" class="maintenance-item">
+            <div>
+                <h2>Nutrient Master</h2>
+                <p>Maintain nutrient names, units, and formulation references.</p>
+            </div>
+            <span>Manage</span>
         </a>
-    </li>
-</ul>
 
-<a href="{% url 'optimizer_ui:dashboard' %}">
-    ← Back to Dashboard
-</a>
+        <a href="{% url 'optimizer_ui:ingredient_master_list' %}" class="maintenance-item">
+            <div>
+                <h2>Ingredient Master</h2>
+                <p>Manage reusable ingredient records used across plants and formulas.</p>
+            </div>
+            <span>Manage</span>
+        </a>
+
+        <a href="{% url 'optimizer_ui:download_ingredient_nutrient_template' %}" class="maintenance-item">
+            <div>
+                <h2>Download Import Template</h2>
+                <p>
+                    Download the Excel template for entering ingredient nutrient values.
+                </p>
+            </div>
+            <span>Download</span>
+        </a>
+
+        <a href="{% url 'optimizer_ui:plant_list' %}" class="maintenance-item">
+            <div>
+                <h2>Plant Overlays</h2>
+                <p>
+                    Manage plant-specific nutrient overrides used during optimization.
+                </p>
+            </div>
+            <span>Manage</span>
+        </a>
+
+    </section>
+
+</div>
+
+</body>
+</html>
+

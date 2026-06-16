@@ -1,14 +1,50 @@
-<h1>{{ title }}</h1>
 
-<form method="post">
-    {% csrf_token %}
-    {{ form.as_p }}
+{% extends "optimizer_ui/base.html" %}
 
-    <button type="submit">Save</button>
-</form>
+{% block title %}{{ title }} — NutriOpt{% endblock %}
 
-<br>
+{% block nav_maintenance %}active{% endblock %}
 
-<a href="{% url 'optimizer_ui:ingredient_master_list' %}">
-    ← Back to Ingredients
-</a>
+{% block content %}
+
+<div class="page-header-row">
+
+    <div class="page-header">
+        <h1>{{ title }}</h1>
+
+        <p>
+            Manage the official ingredient nomenclature used throughout the system.
+        </p>
+    </div>
+
+</div>
+
+<div class="card form-card">
+
+    <form method="post">
+
+        {% csrf_token %}
+
+        {{ form.as_p }}
+
+        <div class="form-actions">
+
+            <button type="submit" class="btn">
+                Save Ingredient
+            </button>
+
+            <a href="{% url 'optimizer_ui:ingredient_master_list' %}"
+               class="btn btn-secondary">
+
+                Back to Ingredients
+
+            </a>
+
+        </div>
+
+    </form>
+
+</div>
+
+{% endblock %}
+

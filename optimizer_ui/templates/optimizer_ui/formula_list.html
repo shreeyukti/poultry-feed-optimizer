@@ -1,36 +1,94 @@
-<a href="{% url 'optimizer_ui:plant_list' %}">← Back to Plants</a>
-<p>
-    <a href="{% url 'optimizer_ui:formula_create' plant.id %}">
-        Add Formula
-    </a>
-</p>
+{% extends "optimizer_ui/base.html" %}
 
-<h1>{{ plant.name }} Formulas</h1>
-<p>Company: {{ plant.company.name }}</p>
-{% for formula in formulas %}
-    <div style="border:1px solid #ddd; padding:16px; margin-bottom:12px;">
+{% block nav_plants %}active{% endblock %}
 
-        <h2>{{ formula.name }}</h2>
+{% block content %}
 
-        <a href="{% url 'optimizer_ui:formula_detail' formula.id %}">
-            Open Formula
+<div class="formula-list-wrapper">
+
+    <div class="formula-page-actions">
+
+        <div>
+            <a class="btn btn-secondary"
+               href="{% url 'optimizer_ui:plant_list' %}">
+                ← Back to Plants
+            </a>
+        </div>
+
+        <a class="btn"
+           href="{% url 'optimizer_ui:formula_create' plant.id %}">
+            + Add Formula
         </a>
 
-        |
-
-        <a href="{% url 'optimizer_ui:formula_update' formula.id %}">
-            Edit
-        </a>
-
-        |
-        
-        <a href="{% url 'optimizer_ui:formula_delete' formula.id %}">
-            Delete
-        </a>
     </div>
-{% empty %}
-    <p>No formulas found for this plant.</p>
-{% endfor %}
-<a href="{% url 'optimizer_ui:plant_list' %}">
-    ← Back to Plants
-</a>
+
+    <div class="page-header">
+        <h1>{{ plant.name }} Formulas</h1>
+        <p>
+            Company: <strong>{{ plant.company.name }}</strong>
+        </p>
+    </div>
+
+    <div class="formula-card-list">
+
+        {% for formula in formulas %}
+
+        <div class="formula-card">
+
+            <div class="formula-card-main">
+
+                <div class="formula-icon">
+                    📄
+                </div>
+
+                <div>
+                    <h2>{{ formula.name }}</h2>
+                </div>
+
+            </div>
+
+            <div class="formula-card-divider"></div>
+
+            <div class="formula-actions">
+
+                <a class="formula-open"
+                   href="{% url 'optimizer_ui:formula_detail' formula.id %}">
+                    Open Formula
+                </a>
+
+                <span>|</span>
+
+                <a class="formula-edit"
+                   href="{% url 'optimizer_ui:formula_update' formula.id %}">
+                    Edit
+                </a>
+
+                <span>|</span>
+
+                <a class="formula-delete"
+                   href="{% url 'optimizer_ui:formula_delete' formula.id %}">
+                    Delete
+                </a>
+
+            </div>
+
+        </div>
+
+        {% empty %}
+
+        <div class="card">
+            <p>No formulas found for this plant.</p>
+
+            <a class="btn"
+               href="{% url 'optimizer_ui:formula_create' plant.id %}">
+                + Create First Formula
+            </a>
+        </div>
+
+        {% endfor %}
+
+    </div>
+
+</div>
+
+{% endblock %}

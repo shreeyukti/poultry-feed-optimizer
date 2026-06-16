@@ -1,69 +1,173 @@
-<h1>Optimization Run Detail</h1>
 
-<p><strong>Formula:</strong> {{ run.formula.name }}</p>
-<p><strong>Plant:</strong> {{ run.formula.plant.name }}</p>
-<p><strong>Status:</strong> {{ run.status }}</p>
-<p><strong>Total Cost:</strong> {{ run.total_cost }}</p>
-<p><strong>Date:</strong> {{ run.created_at }}</p>
+{% extends "optimizer_ui/base.html" %}
 
-<hr>
+{% block title %}Optimization Run Detail — NutriOpt{% endblock %}
 
-<h2>Ingredient Snapshot</h2>
+{% block nav_history %}active{% endblock %}
 
-<table border="1" cellpadding="6" cellspacing="0">
-    <tr>
-        <th>Ingredient</th>
-        <th>Solution Kg</th>
-        <th>Cost/Kg</th>
-        <th>Total Cost</th>
-        <th>Min Kg</th>
-        <th>Max Kg</th>
-    </tr>
+{% block content %}
 
-    {% for row in ingredient_snapshots %}
-    <tr>
-        <td>{{ row.ingredient_name }}</td>
-        <td>{{ row.solution_kg }}</td>
-        <td>{{ row.cost_per_kg }}</td>
-        <td>{{ row.total_cost }}</td>
-        <td>{{ row.minquantity }}</td>
-        <td>{{ row.maxquantity }}</td>
-    </tr>
-    {% empty %}
-    <tr>
-        <td colspan="6">No ingredient snapshot saved.</td>
-    </tr>
-    {% endfor %}
-</table>
+<div class="page-header-row">
 
-<br>
+    <div class="page-header">
+        <h1>Optimization Run Detail</h1>
 
-<h2>Nutrient Snapshot</h2>
+        <p>
+            Formula: <strong>{{ run.formula.name }}</strong>
+            &nbsp; | &nbsp;
+            Plant: <strong>{{ run.formula.plant.name }}</strong>
+        </p>
+    </div>
 
-<table border="1" cellpadding="6" cellspacing="0">
-    <tr>
-        <th>Nutrient</th>
-        <th>Actual</th>
-        <th>Min</th>
-        <th>Max</th>
-    </tr>
+    <a class="btn"
+       href="{% url 'optimizer_ui:export_optimization_excel' run.id %}">
 
-    {% for row in nutrient_snapshots %}
-    <tr>
-        <td>{{ row.nutrient_name }}</td>
-        <td>{{ row.actual_value }}</td>
-        <td>{{ row.min_value }}</td>
-        <td>{{ row.max_value }}</td>
-    </tr>
-    {% empty %}
-    <tr>
-        <td colspan="4">No nutrient snapshot saved.</td>
-    </tr>
-    {% endfor %}
-</table>
+        Export Excel
 
-<br>
+    </a>
 
-<a href="{% url 'optimizer_ui:optimization_run_list' %}">
-    ← Back to History
-</a>
+</div>
+
+<div class="stats-grid">
+
+    <div class="stat-card">
+        <h3>Status</h3>
+        <p>{{ run.status }}</p>
+    </div>
+
+    <div class="stat-card">
+        <h3>Total Cost</h3>
+        <p>{{ run.total_cost }}</p>
+    </div>
+
+    <div class="stat-card">
+        <h3>Date</h3>
+        <p>{{ run.created_at|date:"M d, Y" }}</p>
+    </div>
+
+</div>
+
+<div class="card">
+
+    <div class="card-header">
+        <span class="card-title">
+            Ingredient Snapshot
+        </span>
+    </div>
+
+    <div class="table-wrapper">
+
+        <table>
+
+            <thead>
+                <tr>
+                    <th>Ingredient</th>
+                    <th>Solution Kg</th>
+                    <th>Cost/Kg</th>
+                    <th>Total Cost</th>
+                    <th>Min Kg</th>
+                    <th>Max Kg</th>
+                </tr>
+            </thead>
+
+            <tbody>
+
+                {% for row in ingredient_snapshots %}
+
+                <tr>
+                    <td>{{ row.ingredient_name }}</td>
+                    <td>{{ row.solution_kg }}</td>
+                    <td>{{ row.cost_per_kg }}</td>
+                    <td>{{ row.total_cost }}</td>
+                    <td>{{ row.minquantity }}</td>
+                    <td>{{ row.maxquantity }}</td>
+                </tr>
+
+                {% empty %}
+
+                <tr class="table-empty">
+                    <td colspan="6">
+                        No ingredient snapshot saved.
+                    </td>
+                </tr>
+
+                {% endfor %}
+
+            </tbody>
+
+        </table>
+
+    </div>
+
+</div>
+
+<div class="card">
+
+    <div class="card-header">
+        <span class="card-title">
+            Nutrient Snapshot
+        </span>
+    </div>
+
+    <div class="table-wrapper">
+
+        <table>
+
+            <thead>
+                <tr>
+                    <th>Nutrient</th>
+                    <th>Actual</th>
+                    <th>Min</th>
+                    <th>Max</th>
+                </tr>
+            </thead>
+
+            <tbody>
+
+                {% for row in nutrient_snapshots %}
+
+                <tr>
+                    <td>{{ row.nutrient_name }}</td>
+                    <td>{{ row.actual_value }}</td>
+                    <td>{{ row.min_value }}</td>
+                    <td>{{ row.max_value }}</td>
+                </tr>
+
+                {% empty %}
+
+                <tr class="table-empty">
+                    <td colspan="4">
+                        No nutrient snapshot saved.
+                    </td>
+                </tr>
+
+                {% endfor %}
+
+            </tbody>
+
+        </table>
+
+    </div>
+
+</div>
+
+<div style="margin-top: 20px; display: flex; gap: 12px;">
+
+    <a href="{% url 'optimizer_ui:optimization_run_list' %}"
+       class="btn btn-secondary">
+
+        Back to History
+
+    </a>
+
+    <a class="btn"
+       href="{% url 'optimizer_ui:export_optimization_excel' run.id %}">
+
+        Export Excel
+
+    </a>
+
+</div>
+
+{% endblock %}
+

@@ -1,83 +1,32 @@
-<h1>NutriOpt Feed Optimizer</h1>
+{% extends "optimizer_ui/base.html" %}
 
-<form method="post">
-    {% csrf_token %}
-    <button type="submit">Run Optimization</button>
-</form>
+{% block title %}Home — NutriOpt{% endblock %}
 
-{% if status %}
-    <h2>Status: {{ status }}</h2>
-    {% if errors %}
-        <ul>
-            {% for error in errors %}
-                <li>{{ error }}</li>
-            {% endfor %}
-        </ul>
-    {% else %}
-        <h2>Total Cost: {{ total_cost }}</h2>
-    {% endif %}
-    {% if warnings %}
-        <h3>Warnings</h3>
-        <ul>
-            {% for warning in warnings %}
-                <li>{{ warning }}</li>
-            {% endfor %}
-        </ul>
-    {% endif %}
-    {% if ingredients %}
+{% block nav_dashboard %}active{% endblock %}
 
-<h2>Optimized Ingredients</h2>
+{% block content %}
 
-<table border="1">
+<div class="page-header-row">
+    <div class="page-header">
+        <h1>NutriOpt Feed Optimizer</h1>
+        <p>Use the dashboard to manage plants, formulas, optimization runs, and reports.</p>
+    </div>
+</div>
 
+<div class="card">
+    <p class="text-muted">
+        The standalone optimizer page has been replaced by the Formula Workspace.
+    </p>
 
-    <tr>
-    <th>Ingredient</th>
-    <th>Quantity kg</th>
-    <th>Min Qty</th>
-    <th>Max Qty</th>
-</tr>
-   
+    <div class="quick-actions">
+        <a class="btn" href="{% url 'optimizer_ui:dashboard' %}">
+            Go to Dashboard
+        </a>
 
-    {% for item in ingredients %}
+        <a class="btn btn-secondary" href="{% url 'optimizer_ui:plant_list' %}">
+            View Plants
+        </a>
+    </div>
+</div>
 
-    <tr>
-    <td>{{ item.name }}</td>
-    <td>{{ item.quantity }}</td>
-    <td>{{ item.minquantity }}</td>
-    <td>{{ item.maxquantity }}</td>
-</tr>
-
-    {% endfor %}
-
-</table>
-{% if nutrients %}
-
-<h2>Achieved Nutrients</h2>
-
-<table border="1">
-
-    <tr>
-        <th>Nutrient</th>
-        <th>Achieved</th>
-        <th>Min</th>
-        <th>Max</th>
-    </tr>
-
-    {% for nutrient in nutrients %}
-
-    <tr>
-        <td>{{ nutrient.name }}</td>
-        <td>{{ nutrient.achieved }}</td>
-        <td>{{ nutrient.min }}</td>
-        <td>{{ nutrient.max }}</td>
-    </tr>
-
-    {% endfor %}
-
-</table>
-
-{% endif %}
-
-{% endif %}
-{% endif %}
+{% endblock %}

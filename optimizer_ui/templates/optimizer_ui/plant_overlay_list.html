@@ -1,53 +1,67 @@
-<h1>{{ plant.name }} - Overlays</h1>
+{% extends "optimizer_ui/base.html" %}
 
-<p>
-    Plant-specific nutrient overrides.
-</p>
+{% block title %}{{ plant.name }} Overlays — NutriOpt{% endblock %}
 
-<a href="{% url 'optimizer_ui:plant_overlay_create' plant.id %}">
-    + Add Overlay
-</a>
+{% block nav_plants %}active{% endblock %}
 
-<br><br>
+{% block content %}
 
-<table border="1" cellpadding="6" cellspacing="0">
-    <tr>
-        <th>Ingredient</th>
-        <th>Nutrient</th>
-        <th>Value</th>
-        <th>Actions</th>
-    </tr>
+<div class="page-header-row">
+    <div class="page-header">
+        <h1>{{ plant.name }} - Overlays</h1>
+        <p>Manage plant-specific nutrient overrides for ingredient compositions.</p>
+    </div>
 
-    {% for overlay in overlays %}
-    <tr>
-        <td>{{ overlay.ingredient_master.name }}</td>
-        <td>{{ overlay.nutrient.name }}</td>
-        <td>{{ overlay.value }}</td>
+    <a class="btn" href="{% url 'optimizer_ui:plant_overlay_create' plant.id %}">
+        + Add Overlay
+    </a>
+</div>
 
-        <td>
-            <a href="{% url 'optimizer_ui:plant_overlay_update' overlay.id %}">
-                Edit
-            </a>
+<div class="card">
+    <div class="table-wrapper">
+        <table>
+            <thead>
+                <tr>
+                    <th>Ingredient</th>
+                    <th>Nutrient</th>
+                    <th>Overlay Value</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
 
-            |
+            <tbody>
+                {% for overlay in overlays %}
+                <tr>
+                    <td><strong>{{ overlay.ingredient_master.name }}</strong></td>
+                    <td>{{ overlay.nutrient.name }}</td>
+                    <td>{{ overlay.value }}</td>
+                    <td>
+                        <a href="{% url 'optimizer_ui:plant_overlay_update' overlay.id %}">
+                            Edit
+                        </a>
+                        |
+                        <a href="{% url 'optimizer_ui:plant_overlay_delete' overlay.id %}">
+                            Delete
+                        </a>
+                    </td>
+                </tr>
 
-            <a href="{% url 'optimizer_ui:plant_overlay_delete' overlay.id %}">
-                Delete
-            </a>
-        </td>
-    </tr>
+                {% empty %}
+                <tr class="table-empty">
+                    <td colspan="4">
+                        No overlays defined.
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
 
-    {% empty %}
-    <tr>
-        <td colspan="4">
-            No overlays defined.
-        </td>
-    </tr>
-    {% endfor %}
-</table>
+<div style="margin-top: 20px;">
+    <a href="{% url 'optimizer_ui:plant_list' %}" class="btn btn-secondary">
+        Back to Plants
+    </a>
+</div>
 
-<br>
-
-<a href="{% url 'optimizer_ui:plant_list' %}">
-    ← Back to Plants
-</a>
+{% endblock %}

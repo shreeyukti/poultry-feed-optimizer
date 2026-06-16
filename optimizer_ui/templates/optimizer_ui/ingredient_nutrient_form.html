@@ -1,18 +1,51 @@
-<h1>{{ title }}</h1>
+```django
+{% extends "optimizer_ui/base.html" %}
 
-<p>
-    Ingredient: <strong>{{ ingredient.ingredient }}</strong>
-</p>
+{% block title %}{{ title }} — NutriOpt{% endblock %}
 
-<form method="post">
-    {% csrf_token %}
-    {{ form.as_p }}
+{% block nav_plants %}active{% endblock %}
 
-    <button type="submit">Save</button>
-</form>
+{% block content %}
 
-<br>
+<div class="page-header-row">
 
-<a href="{% url 'optimizer_ui:ingredient_nutrient_list' ingredient.id %}">
-    ← Back to Nutrient Values
-</a>
+    <div class="page-header">
+        <h1>{{ title }}</h1>
+
+        <p>
+            Ingredient:
+            <strong>{{ ingredient.ingredient }}</strong>
+        </p>
+    </div>
+
+</div>
+
+<div class="card form-card">
+
+    <form method="post">
+
+        {% csrf_token %}
+
+        {{ form.as_p }}
+
+        <div class="form-actions">
+
+            <button type="submit" class="btn">
+                Save Nutrient Value
+            </button>
+
+            <a href="{% url 'optimizer_ui:ingredient_nutrient_list' ingredient.id %}"
+               class="btn btn-secondary">
+
+                Back to Nutrient Values
+
+            </a>
+
+        </div>
+
+    </form>
+
+</div>
+
+{% endblock %}
+```

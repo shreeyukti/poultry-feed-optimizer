@@ -150,4 +150,22 @@ path(
     views.ingredient_nutrient_matrix,
     name="ingredient_nutrient_matrix",
 ),
+path("plants/add/", views.plant_create, name="plant_create"),
+path("plants/<int:plant_id>/edit/", views.plant_update, name="plant_update"),
+path("plants/<int:plant_id>/delete/", views.plant_delete, name="plant_delete"),
+path(
+    "plants/<int:plant_id>/workspace/",
+    views.plant_override_workspace,
+    name="plant_override_workspace",
+),
+path(
+    "optimization-runs/<int:run_id>/export-excel/",
+    views.export_optimization_excel,
+    name="export_optimization_excel",
+),
+path(
+    "maintenance/ingredients/template/download/",
+    views.download_ingredient_nutrient_template,
+    name="download_ingredient_nutrient_template",
+),
 ]

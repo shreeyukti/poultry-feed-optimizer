@@ -1,37 +1,63 @@
-<h1>Optimization History</h1>
+{% extends "optimizer_ui/base.html" %}
 
-<table border="1" cellpadding="6" cellspacing="0">
-    <tr>
-        <th>Date</th>
-        <th>Formula</th>
-        <th>Plant</th>
-        <th>Status</th>
-        <th>Total Cost</th>
-        <th>Action</th>
-    </tr>
+{% block title %}Optimization History — NutriOpt{% endblock %}
 
-    {% for run in runs %}
-    <tr>
-        <td>{{ run.created_at }}</td>
-        <td>{{ run.formula.name }}</td>
-        <td>{{ run.formula.plant.name }}</td>
-        <td>{{ run.status }}</td>
-        <td>{{ run.total_cost }}</td>
-        <td>
-            <a href="{% url 'optimizer_ui:optimization_run_detail' run.id %}">
-                View
-            </a>
-        </td>
-    </tr>
-    {% empty %}
-    <tr>
-        <td colspan="6">No optimization runs found.</td>
-    </tr>
-    {% endfor %}
-</table>
+{% block nav_history %}active{% endblock %}
 
-<br>
+{% block content %}
 
-<a href="{% url 'optimizer_ui:dashboard' %}">
-    ← Back to Dashboard
-</a>
+<div class="page-header-row">
+    <div class="page-header">
+        <h1>Optimization History</h1>
+        <p>Review previous optimization runs and exported results.</p>
+    </div>
+
+    <a href="{% url 'optimizer_ui:dashboard' %}" class="btn btn-secondary">
+        Back to Dashboard
+    </a>
+</div>
+
+<div class="card">
+    <div class="table-wrapper">
+        <table>
+            <thead>
+                <tr>
+                    <th>Date</th>
+                    <th>Formula</th>
+                    <th>Plant</th>
+                    <th>Status</th>
+                    <th>Total Cost</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                {% for run in runs %}
+                <tr>
+                    <td>{{ run.created_at|date:"M d, Y H:i" }}</td>
+                    <td><strong>{{ run.formula.name }}</strong></td>
+                    <td>{{ run.formula.plant.name }}</td>
+                    <td>
+                        <span class="badge badge-neutral">
+                            {{ run.status|title }}
+                        </span>
+                    </td>
+                    <td>{{ run.total_cost|default:"—" }}</td>
+                    <td>
+                        <a href="{% url 'optimizer_ui:optimization_run_detail' run.id %}">
+                            View
+                        </a>
+                    </td>
+                </tr>
+
+                {% empty %}
+                <tr class="table-empty">
+                    <td colspan="6">No optimization runs found.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+{% endblock %}

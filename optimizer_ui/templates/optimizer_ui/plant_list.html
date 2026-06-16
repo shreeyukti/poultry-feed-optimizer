@@ -1,25 +1,94 @@
-<h1>Select Plant</h1>
 
-{% for plant in plants %}
-    <div style="border:1px solid #ccc; padding:15px; margin-bottom:15px;">
-        <h2>{{ plant.name }}</h2>
-        <p>{{ plant.company.name }}</p>
-        <p>{{ plant.location }}</p>
+{% extends "optimizer_ui/base.html" %}
 
-        <a href="{% url 'optimizer_ui:formula_list' plant.id %}">
-            Open Formulas
-        </a>
+{% block nav_plants %}active{% endblock %}
 
-        <br><br>
+{% block content %}
 
-        <a href="{% url 'optimizer_ui:plant_overlay_list' plant.id %}">
-            Manage Overlays
-        </a>
+<div class="page-header-row">
+    <div class="page-header">
+        <h1>Select Feed Unit / Plant</h1>
+        <p>
+            Choose the production unit where you want to run or manage a formula.
+        </p>
     </div>
-{% empty %}
-    <p>No plants found.</p>
-{% endfor %}
 
-<a href="{% url 'optimizer_ui:dashboard' %}">
-    ← Back to Dashboard
-</a>
+    <a class="btn" href="{% url 'optimizer_ui:plant_create' %}">
+        + Add Plant
+    </a>
+</div>
+
+<div class="plant-grid">
+
+    {% for plant in plants %}
+
+    <div class="card plant-card">
+
+        <h2>{{ plant.name }}</h2>
+
+        <p>
+            <strong>Company:</strong>
+            {{ plant.company.name }}
+        </p>
+
+        <p>
+            <strong>Location:</strong>
+            {{ plant.location|default:"-" }}
+        </p>
+
+        <div class="quick-actions">
+
+            <a class="btn"
+               href="{% url 'optimizer_ui:formula_list' plant.id %}">
+
+                Select Plant
+
+            </a>
+
+            <a class="btn btn-secondary"
+               href="{% url 'optimizer_ui:plant_override_workspace' plant.id %}">
+
+                Nutrient Overrides
+
+            </a>
+
+            <a class="btn btn-secondary"
+               href="{% url 'optimizer_ui:plant_update' plant.id %}">
+
+                Edit
+
+            </a>
+
+            <a class="btn btn-danger"
+               href="{% url 'optimizer_ui:plant_delete' plant.id %}">
+
+                Delete
+
+            </a>
+
+        </div>
+
+    </div>
+
+    {% empty %}
+
+    <div class="card">
+
+        <p>
+            No plants found.
+        </p>
+
+        <a class="btn"
+           href="{% url 'optimizer_ui:plant_create' %}">
+
+            + Add Your First Plant
+
+        </a>
+
+    </div>
+
+    {% endfor %}
+
+</div>
+
+{% endblock %}

@@ -1,70 +1,146 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Dashboard</title>
-</head>
-<body>
+{% extends "optimizer_ui/base.html" %}
 
-    <h1>Feed Optimization Dashboard</h1>
+{% block title %}Dashboard — NutriOpt{% endblock %}
 
-    <p>Welcome, {{ request.user.username }}</p>
+{% block nav_dashboard %}active{% endblock %}
 
-    <hr>
+{% block content %}
 
-    <h2>Summary</h2>
+<div class="page-header-row">
+    <div class="page-header">
+        <h1>Dashboard</h1>
+        <p>Overview of your poultry feed optimization system.</p>
+    </div>
 
-    <p><strong>Total Plants:</strong> {{ total_plants }}</p>
-    <p><strong>Total Formulas:</strong> {{ total_formulas }}</p>
-    <p><strong>Total Optimization Runs:</strong> {{ total_runs }}</p>
+    <div class="page-actions">
+        <a class="btn" href="{% url 'optimizer_ui:plant_list' %}">
+            + New Optimization Run
+        </a>
 
-    <hr>
+        
+        
+    </div>
+</div>
 
-    <h2>Quick Actions</h2>
+<div class="stats-grid">
 
-    <p>
-        <a href="{% url 'optimizer_ui:plant_list' %}">View Plants</a>
-    </p>
+    <div class="stat-card">
+        <h3>Total Plants</h3>
+        <p>{{ total_plants|default:"0" }}</p>
+        <div class="stat-card-meta">Active facilities</div>
+    </div>
 
-    <p>
-        <a href="{% url 'optimizer_ui:logout' %}">Logout</a>
-    </p>
+    <div class="stat-card">
+        <h3>Total Formulas</h3>
+        <p>{{ total_formulas|default:"0" }}</p>
+        <div class="stat-card-meta">Feed formulations</div>
+    </div>
 
-    <hr>
-<h2>Maintenance</h2>
+    <div class="stat-card">
+        <h3>Optimization Runs</h3>
+        <p>{{ total_runs|default:"0" }}</p>
+        <div class="stat-card-meta">All time</div>
+    </div>
 
-<a href="{% url 'optimizer_ui:maintenance_home' %}">
-    Open Maintenance
-</a>
-<hr>
-    <h2>Recent Optimization Runs</h2>
+</div>
 
-    {% if recent_runs %}
-        <table border="1" cellpadding="8">
-            <tr>
-                <th>Formula</th>
-                <th>Plant</th>
-                <th>Status</th>
-                <th>Total Cost</th>
-                <th>Date</th>
-            </tr>
+<div class="card">
+    <div class="card-header">
+        <span class="card-title">Quick Actions</span>
+    </div>
 
-            {% for run in recent_runs %}
-            <tr>
-                <td>{{ run.formula.name }}</td>
-                <td>{{ run.formula.plant.name }}</td>
-                <td>{{ run.status }}</td>
-                <td>{{ run.total_cost }}</td>
-                <td>{{ run.created_at }}</td>
-            </tr>
-            {% endfor %}
+    <div class="quick-actions">
+
+        <a class="btn" href="{% url 'optimizer_ui:plant_list' %}">
+            View Plants
+        </a>
+
+        <a class="btn btn-secondary" href="{% url 'optimizer_ui:maintenance_home' %}">
+            Maintenance
+        </a>
+
+    
+
+        <a class="btn btn-secondary" href="{% url 'optimizer_ui:optimization_run_list' %}">
+            Optimization History
+        </a>
+
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <span class="card-title">Recent Optimization Runs</span>
+
+        <a href="{% url 'optimizer_ui:optimization_run_list' %}"
+           class="btn btn-sm btn-secondary">
+            View All
+            <br>
+        </a>
+    </div>
+
+    <div class="table-wrapper">
+        <table>
+            <thead>
+                <tr>
+                    <th>Formula</th>
+                    <th>Plant</th>
+                    <th>Status</th>
+                    <th>Total Cost</th>
+                    <th>Date</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                {% for run in recent_runs %}
+                <tr>
+                    <td>
+                        <span style="font-weight: 600;">
+                            {{ run.formula.name }}
+                        </span>
+                    </td>
+
+                    <td>{{ run.formula.plant.name }}</td>
+
+                    <td>
+                        {% if run.status == "success" or run.status == "completed" %}
+                            <span class="badge badge-success">{{ run.status|title }}</span>
+                        {% elif run.status == "failed" or run.status == "error" %}
+                            <span class="badge badge-danger">{{ run.status|title }}</span>
+                        {% elif run.status == "running" or run.status == "pending" %}
+                            <span class="badge badge-warning">{{ run.status|title }}</span>
+                        {% else %}
+                            <span class="badge badge-neutral">{{ run.status|title }}</span>
+                        {% endif %}
+                    </td>
+
+                    <td>
+                        {% if run.total_cost %}
+                            <span style="font-weight: 600;">
+                                {{ run.total_cost }}
+                            </span>
+                        {% else %}
+                            <span class="text-muted">—</span>
+                        {% endif %}
+                    </td>
+
+                    <td>
+                        <span class="text-muted text-sm">
+                            {{ run.created_at|date:"M d, Y" }}
+                        </span>
+                    </td>
+                </tr>
+
+                {% empty %}
+                <tr class="table-empty">
+                    <td colspan="5">
+                        No optimization runs yet. Start your first run above.
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
         </table>
-    {% else %}
-        <p>No optimization runs yet.</p>
-    {% endif %}
-<p>
-    <a href="{% url 'optimizer_ui:optimization_run_list' %}">
-        View Optimization History
-    </a>
-</p>
-</body>
-</html>
+    </div>
+</div>
+
+{% endblock %}

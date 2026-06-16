@@ -1,34 +1,83 @@
-<table border="1" cellpadding="6" cellspacing="0">
-    <tr>
-        <th>Name</th>
-        <th>Description</th>
-        <th>Action</th>
-    </tr>
+{% extends "optimizer_ui/base.html" %}
 
-    {% for ingredient in ingredients %}
-    <tr>
-        <td>
-            <a href="{% url 'optimizer_ui:ingredient_nutrient_matrix' ingredient.id %}">
-                {{ ingredient.name }}
-            </a>
-        </td>
+{% block title %}Ingredient Master — NutriOpt{% endblock %}
 
-        <td>{{ ingredient.description }}</td>
+{% block nav_maintenance %}active{% endblock %}
 
-        <td>
-            <a href="{% url 'optimizer_ui:ingredient_master_update' ingredient.id %}">
-                Edit
-            </a>
-            |
-            <a href="{% url 'optimizer_ui:ingredient_master_delete' ingredient.id %}">
-                Delete
-            </a>
-        </td>
-    </tr>
+{% block content %}
 
-    {% empty %}
-    <tr>
-        <td colspan="3">No ingredients added.</td>
-    </tr>
-    {% endfor %}
-</table>
+<div class="page-header-row">
+
+    <div class="page-header">
+        <h1>Ingredient Master</h1>
+        <p>
+            Manage the official ingredient nomenclature and nutrient composition records.
+        </p>
+    </div>
+
+    <a class="btn" href="{% url 'optimizer_ui:ingredient_master_create' %}">
+        + Add Ingredient
+    </a>
+
+</div>
+
+<div class="card">
+
+    <div class="table-wrapper">
+
+        <table>
+
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Description</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+
+            <tbody>
+
+                {% for ingredient in ingredients %}
+
+                <tr>
+                    <td>
+                        <a href="{% url 'optimizer_ui:ingredient_nutrient_matrix' ingredient.id %}"
+                           class="ingredient-link">
+                            <strong>{{ ingredient.name }}</strong>
+                        </a>
+                    </td>
+
+                    <td>
+                        {{ ingredient.description|default:"—" }}
+                    </td>
+
+                    <td>
+                        <a href="{% url 'optimizer_ui:ingredient_master_update' ingredient.id %}">
+                            Edit
+                        </a>
+                        |
+                        <a href="{% url 'optimizer_ui:ingredient_master_delete' ingredient.id %}">
+                            Delete
+                        </a>
+                    </td>
+                </tr>
+
+                {% empty %}
+
+                <tr class="table-empty">
+                    <td colspan="3">
+                        No ingredients added.
+                    </td>
+                </tr>
+
+                {% endfor %}
+
+            </tbody>
+
+        </table>
+
+    </div>
+
+</div>
+
+{% endblock %}

@@ -1,37 +1,88 @@
-<h1>Nutrients</h1>
 
-<p>
-    <a href="{% url 'optimizer_ui:nutrient_create' %}">
+{% extends "optimizer_ui/base.html" %}
+
+{% block title %}Nutrients — NutriOpt{% endblock %}
+
+{% block nav_maintenance %}active{% endblock %}
+
+{% block content %}
+
+<div class="page-header-row">
+
+    <div class="page-header">
+        <h1>Nutrients</h1>
+        <p>Manage nutrient definitions used across feed formulations.</p>
+    </div>
+
+    <a href="{% url 'optimizer_ui:nutrient_create' %}" class="btn">
         Add Nutrient
     </a>
-</p>
 
-<table border="1" cellpadding="6" cellspacing="0">
-    <tr>
-        <th>Name</th>
-        <th>Unit</th>
-        <th>Action</th>
-    </tr>
+</div>
 
-    {% for nutrient in nutrients %}
-    <tr>
-        <td>{{ nutrient.name }}</td>
-        <td>{{ nutrient.unit }}</td>
-        <td>
-            <a href="{% url 'optimizer_ui:nutrient_update' nutrient.id %}">Edit</a>
-            |
-            <a href="{% url 'optimizer_ui:nutrient_delete' nutrient.id %}">Delete</a>
-        </td>
-    </tr>
-    {% empty %}
-    <tr>
-        <td colspan="3">No nutrients added.</td>
-    </tr>
-    {% endfor %}
-</table>
+<div class="card">
 
-<br>
+    <div class="table-wrapper">
 
-<a href="{% url 'optimizer_ui:maintenance_home' %}">
-    ← Back to Maintenance
-</a>
+        <table>
+
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Unit</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+
+            <tbody>
+
+                {% for nutrient in nutrients %}
+
+                <tr>
+
+                    <td>
+                        {{ nutrient.name }}
+                    </td>
+
+                    <td>
+                        {{ nutrient.unit }}
+                    </td>
+
+                    <td>
+
+                        <a href="{% url 'optimizer_ui:nutrient_update' nutrient.id %}">
+                            Edit
+                        </a>
+
+                        |
+
+                        <a href="{% url 'optimizer_ui:nutrient_delete' nutrient.id %}">
+                            Delete
+                        </a>
+
+                    </td>
+
+                </tr>
+
+                {% empty %}
+
+                <tr class="table-empty">
+
+                    <td colspan="3">
+                        No nutrients added.
+                    </td>
+
+                </tr>
+
+                {% endfor %}
+
+            </tbody>
+
+        </table>
+
+    </div>
+
+</div>
+
+{% endblock %}
+

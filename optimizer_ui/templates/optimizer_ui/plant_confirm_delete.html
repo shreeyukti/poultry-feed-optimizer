@@ -1,0 +1,22 @@
+{% extends "optimizer_ui/base.html" %}
+
+{% block nav_plants %}active{% endblock %}
+
+{% block content %}
+
+<div class="card">
+    <h1>Delete Plant</h1>
+
+    <p>Are you sure you want to delete <strong>{{ plant.name }}</strong>?</p>
+
+    <form method="post">
+        {% csrf_token %}
+        <button class="btn btn-danger" type="submit">Yes, Delete</button>
+
+        <a class="btn btn-secondary" href="{% url 'optimizer_ui:plant_list' %}">
+            Cancel
+        </a>
+    </form>
+</div>
+
+{% endblock %}

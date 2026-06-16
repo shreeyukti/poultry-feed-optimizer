@@ -1,0 +1,21 @@
+{% extends "optimizer_ui/base.html" %}
+
+{% block nav_plants %}active{% endblock %}
+
+{% block content %}
+
+<div class="card">
+    <h1>{{ title }}</h1>
+
+    <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+
+        <button class="btn" type="submit">Save</button>
+        <a class="btn btn-secondary" href="{% url 'optimizer_ui:plant_list' %}">
+            Cancel
+        </a>
+    </form>
+</div>
+
+{% endblock %}

@@ -1,0 +1,139 @@
+
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}NutriOpt — Poultry Feed Optimizer{% endblock %}</title>
+
+    <link rel="stylesheet" href="{% static 'optimizer_ui/css/style.css' %}">
+</head>
+
+<body>
+
+<div class="app-layout">
+
+    <!-- Sidebar -->
+    <aside class="sidebar">
+
+        <div class="sidebar-logo">
+            <img src="{% static 'optimizer_ui/images/logo.png' %}"
+                 alt="NutriOpt"
+                 class="sidebar-logo-image">
+
+        
+        </div>
+
+        <div class="sidebar-label">
+            Main Menu
+        </div>
+
+        <nav class="sidebar-nav">
+
+            <a href="{% url 'optimizer_ui:dashboard' %}"
+               class="nav-link {% block nav_dashboard %}{% endblock %}">
+
+                Dashboard
+            </a>
+
+            <a href="{% url 'optimizer_ui:plant_list' %}"
+               class="nav-link {% block nav_plants %}{% endblock %}">
+
+                Plants
+            </a>
+
+            <a href="{% url 'optimizer_ui:maintenance_home' %}"
+               class="nav-link {% block nav_maintenance %}{% endblock %}">
+
+                Maintenance
+            </a>
+
+            <a href="{% url 'optimizer_ui:optimization_run_list' %}"
+               class="nav-link {% block nav_history %}{% endblock %}">
+
+                Optimization History
+            </a>
+            <a href="{% url 'optimizer_ui:download_ingredient_nutrient_template' %}"
+            class="nav-link">
+
+                Download Template
+
+            </a>
+
+        </nav>
+
+        <div class="sidebar-divider"></div>
+
+        <div class="sidebar-footer">
+
+            <a href="{% url 'optimizer_ui:logout' %}"
+               class="nav-link">
+
+                Logout
+            </a>
+
+        </div>
+
+    </aside>
+
+    <!-- Main -->
+    <div class="main-wrapper">
+
+        <header class="topbar">
+
+            <div class="topbar-left">
+                {% block breadcrumb %}{% endblock %}
+            </div>
+
+            <div class="topbar-right">
+
+                {% if request.user.is_authenticated %}
+
+                <div class="topbar-user">
+
+                    <div class="user-avatar">
+                        {{ request.user.username|first|upper }}
+                    </div>
+
+                    <span class="user-name">
+                        {{ request.user.username }}
+                    </span>
+
+                </div>
+
+                {% endif %}
+
+            </div>
+
+        </header>
+
+        <main class="main-content">
+
+            {% if messages %}
+
+            <div class="messages-container">
+
+                {% for message in messages %}
+
+                <div class="alert alert-{{ message.tags }}">
+                    {{ message }}
+                </div>
+
+                {% endfor %}
+
+            </div>
+
+            {% endif %}
+
+            {% block content %}
+            {% endblock %}
+
+        </main>
+
+    </div>
+
+</div>
+
+</body>
+</html>

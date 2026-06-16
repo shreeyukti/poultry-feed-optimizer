@@ -1,6 +1,13 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
+from django.http import HttpResponse
+from openpyxl import Workbook
+from openpyxl.styles import Font, PatternFill, Alignment
+from django.contrib import messages
+from django.http import HttpResponse
+from openpyxl import Workbook
+from .models import Nutrient
 
 from .models import (
     Plant,
@@ -15,7 +22,8 @@ from .services.optimization_service import OptimizationService
 from .forms import (
     IngredientForm,
     FormulaForm,
-    NutrientConstraintForm,NutrientForm,IngredientNutrientForm,IngredientMasterForm,BaseIngredientNutrientForm,PlantIngredientNutrientOverlayForm
+    NutrientConstraintForm,NutrientForm,IngredientNutrientForm,IngredientMasterForm,BaseIngredientNutrientForm,PlantIngredientNutrientOverlayForm,
+    PlantForm
 )
 
 
@@ -928,3 +936,299 @@ def ingredient_nutrient_matrix(request, ingredient_id):
         "selected_plant": selected_plant,
         "rows": rows,
     })
+
+@login_required
+def plant_create(request):
+    if request.method == "POST":
+        form = PlantForm(request.POST, user=request.user)
+
+        if form.is_valid():
+            form.save()
+            return redirect("optimizer_ui:plant_list")
+    else:
+        form = PlantForm(user=request.user)
+
+    return render(request, "optimizer_ui/plant_form.html", {
+        "form": form,
+        "title": "Add Plant",
+    })
+
+
+@login_required
+def plant_update(request, plant_id):
+    plant = get_object_or_404(
+        Plant,
+        id=plant_id,
+        company__owner=request.user
+    )
+
+    if request.method == "POST":
+        form = PlantForm(
+            request.POST,
+            instance=plant,
+            user=request.user
+        )
+
+        if form.is_valid():
+            form.save()
+            return redirect("optimizer_ui:plant_list")
+    else:
+        form = PlantForm(
+            instance=plant,
+            user=request.user
+        )
+
+    return render(request, "optimizer_ui/plant_form.html", {
+        "form": form,
+        "title": "Edit Plant",
+    })
+
+
+@login_required
+def plant_delete(request, plant_id):
+    plant = get_object_or_404(
+        Plant,
+        id=plant_id,
+        company__owner=request.user
+    )
+
+    if request.method == "POST":
+        plant.delete()
+        return redirect("optimizer_ui:plant_list")
+
+    return render(request, "optimizer_ui/plant_confirm_delete.html", {
+        "plant": plant,
+    })
+@login_required
+def plant_override_workspace(request, plant_id):
+    plant = get_object_or_404(
+        Plant,
+        id=plant_id,
+        company__owner=request.user,
+    )
+
+    ingredients = IngredientMaster.objects.order_by("name")
+
+    ingredient_id = request.GET.get("ingredient")
+
+    if ingredient_id:
+        selected_ingredient = get_object_or_404(
+            IngredientMaster,
+            id=ingredient_id
+        )
+    else:
+        selected_ingredient = (
+            ingredients.filter(name__iexact="Maize").first()
+            or ingredients.first()
+        )
+
+    nutrients = Nutrient.objects.all().order_by("name")
+
+    if request.method == "POST":
+        for nutrient in nutrients:
+            base_raw = request.POST.get(f"base_{nutrient.id}")
+            overlay_raw = request.POST.get(f"overlay_{nutrient.id}")
+
+            base_value = float(base_raw) if base_raw not in ["", None] else 0
+
+            BaseIngredientNutrient.objects.update_or_create(
+                ingredient_master=selected_ingredient,
+                nutrient=nutrient,
+                defaults={"value": base_value}
+            )
+
+            if overlay_raw in ["", None]:
+                PlantIngredientNutrientOverlay.objects.filter(
+                    plant=plant,
+                    ingredient_master=selected_ingredient,
+                    nutrient=nutrient
+                ).delete()
+            else:
+                PlantIngredientNutrientOverlay.objects.update_or_create(
+                    plant=plant,
+                    ingredient_master=selected_ingredient,
+                    nutrient=nutrient,
+                    defaults={"value": float(overlay_raw)}
+                )
+
+        return redirect(
+            f"{request.path}?ingredient={selected_ingredient.id}"
+        )
+
+    base_values = {
+        item.nutrient_id: item
+        for item in BaseIngredientNutrient.objects.filter(
+            ingredient_master=selected_ingredient
+        )
+    }
+
+    overlay_values = {
+        item.nutrient_id: item
+        for item in PlantIngredientNutrientOverlay.objects.filter(
+            plant=plant,
+            ingredient_master=selected_ingredient
+        )
+    }
+
+    rows = []
+
+    for nutrient in nutrients:
+        base_obj = base_values.get(nutrient.id)
+        overlay_obj = overlay_values.get(nutrient.id)
+
+        base_value = base_obj.value if base_obj else 0
+        overlay_value = overlay_obj.value if overlay_obj else ""
+        effective_value = overlay_obj.value if overlay_obj else base_value
+
+        rows.append({
+            "nutrient": nutrient,
+            "base_value": base_value,
+            "overlay_value": overlay_value,
+            "effective_value": effective_value,
+        })
+
+    return render(
+        request,
+        "optimizer_ui/plant_override_workspace.html",
+        {
+            "plant": plant,
+            "ingredients": ingredients,
+            "selected_ingredient": selected_ingredient,
+            "rows": rows,
+        },
+    )
+@login_required
+def export_optimization_excel(request, run_id):
+    run = get_object_or_404(
+        OptimizationRun.objects.select_related(
+            "formula",
+            "formula__plant",
+            "formula__plant__company"
+        ),
+        id=run_id,
+        formula__plant__company__owner=request.user
+    )
+
+    ingredient_rows = run.ingredient_snapshots.all().order_by("ingredient_name")
+    nutrient_rows = run.nutrient_snapshots.all().order_by("nutrient_name")
+
+    wb = Workbook()
+
+    # ---------------- SUMMARY SHEET ----------------
+    ws = wb.active
+    ws.title = "Summary"
+
+    ws.append(["Formula", run.formula.name])
+    ws.append(["Plant", run.formula.plant.name])
+    ws.append(["Company", run.formula.plant.company.name])
+    ws.append(["Status", run.status])
+    ws.append(["Total Cost", run.total_cost])
+    ws.append(["Date", run.created_at.strftime("%Y-%m-%d %H:%M")])
+
+    # ---------------- INGREDIENT SHEET ----------------
+    ws_ing = wb.create_sheet("Ingredients")
+
+    ws_ing.append([
+        "Ingredient",
+        "Solution Kg",
+        "Cost/Kg",
+        "Total Cost",
+        "Min Kg",
+        "Max Kg",
+    ])
+
+    for row in ingredient_rows:
+        ws_ing.append([
+            row.ingredient_name,
+            row.solution_kg,
+            row.cost_per_kg,
+            row.total_cost,
+            row.minquantity,
+            row.maxquantity,
+        ])
+
+    # ---------------- NUTRIENT SHEET ----------------
+    ws_nut = wb.create_sheet("Nutrients")
+
+    ws_nut.append([
+        "Nutrient",
+        "Actual",
+        "Min",
+        "Max",
+    ])
+
+    for row in nutrient_rows:
+        ws_nut.append([
+            row.nutrient_name,
+            row.actual_value,
+            row.min_value,
+            row.max_value,
+        ])
+
+    # ---------------- STYLING ----------------
+    for sheet in wb.worksheets:
+        for cell in sheet[1]:
+            cell.font = Font(bold=True, color="FFFFFF")
+            cell.fill = PatternFill(
+                start_color="1A5C36",
+                end_color="1A5C36",
+                fill_type="solid"
+            )
+            cell.alignment = Alignment(horizontal="center")
+
+        for column_cells in sheet.columns:
+            max_length = 0
+            column_letter = column_cells[0].column_letter
+
+            for cell in column_cells:
+                value = str(cell.value) if cell.value is not None else ""
+                max_length = max(max_length, len(value))
+
+            sheet.column_dimensions[column_letter].width = max_length + 4
+
+    filename = f"{run.formula.name}_run_{run.id}.xlsx".replace(" ", "_")
+
+    response = HttpResponse(
+        content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    )
+    response["Content-Disposition"] = f'attachment; filename="{filename}"'
+
+    wb.save(response)
+
+    return response
+
+def download_ingredient_nutrient_template(request):
+    nutrients = Nutrient.objects.all().order_by("name")
+    ingredients = IngredientMaster.objects.all().order_by("name")
+
+    wb = Workbook()
+    ws = wb.active
+    ws.title = "Ingredient Nutrients"
+
+    headers = ["ingredient_name"]
+
+    for nutrient in nutrients:
+        if nutrient.unit:
+            headers.append(f"{nutrient.name} ({nutrient.unit})")
+        else:
+            headers.append(nutrient.name)
+
+    ws.append(headers)
+
+    for ingredient in ingredients:
+        row = [ingredient.name]
+
+        row += ["" for _ in nutrients]
+
+        ws.append(row)
+
+    response = HttpResponse(
+        content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    )
+
+    response["Content-Disposition"] = (
+        'attachment; filename="ingredient_nutrient_template.xlsx"'
+    )
+
+    wb.save(response)
+    return response

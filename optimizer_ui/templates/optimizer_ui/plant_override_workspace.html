@@ -1,0 +1,99 @@
+{% extends "optimizer_ui/base.html" %}
+
+{% block nav_plants %}active{% endblock %}
+
+{% block content %}
+
+<div class="page-header">
+    <h1>{{ plant.name }} - Manage Base / Overlay</h1>
+    <p>Select an ingredient and edit base and plant-specific overlay nutrient values.</p>
+</div>
+
+<div class="override-layout">
+
+    <div class="ingredient-sidebar">
+        <h3>Ingredients</h3>
+
+        {% for ingredient in ingredients %}
+            <a
+                class="ingredient-link {% if ingredient.id == selected_ingredient.id %}active{% endif %}"
+                href="?ingredient={{ ingredient.id }}"
+            >
+                {{ ingredient.name }}
+            </a>
+        {% endfor %}
+    </div>
+
+    <div class="override-content">
+        <div class="card-header">
+            <div>
+                <h2>{{ selected_ingredient.name }}</h2>
+                <p class="text-muted">
+                    Base values are default. Overlay values override base for {{ plant.name }}.
+                </p>
+            </div>
+        </div>
+
+        <form method="post">
+            {% csrf_token %}
+
+            <div class="table-wrapper">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Nutrient</th>
+                            <th>Base Value</th>
+                            <th>Overlay Value</th>
+                            <th>Effective Value</th>
+                            <th>Unit</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        {% for row in rows %}
+                        <tr>
+                            <td>{{ row.nutrient.name }}</td>
+
+                            <td>
+                                <input
+                                    type="number"
+                                    step="0.001"
+                                    name="base_{{ row.nutrient.id }}"
+                                    value="{{ row.base_value }}"
+                                >
+                            </td>
+
+                            <td>
+                                <input
+                                    type="number"
+                                    step="0.001"
+                                    name="overlay_{{ row.nutrient.id }}"
+                                    value="{{ row.overlay_value }}"
+                                    placeholder="blank = base"
+                                >
+                            </td>
+
+                            <td>{{ row.effective_value }}</td>
+
+                            <td>{{ row.nutrient.unit }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <br>
+
+            <button class="btn" type="submit">
+                Save Base / Overlay Values
+            </button>
+
+            <a class="btn btn-secondary" href="{% url 'optimizer_ui:plant_list' %}">
+                Back to Plants
+            </a>
+        </form>
+    </div>
+
+</div>
+
+{% endblock %}

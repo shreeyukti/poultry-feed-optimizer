@@ -1,19 +1,42 @@
-<h1>Delete Nutrient Value</h1>
+{% extends "optimizer_ui/base.html" %}
 
-<p>
-    Are you sure you want to delete
-    <strong>{{ value.nutrient.name }}</strong>
-    from
-    <strong>{{ ingredient.ingredient }}</strong>?
-</p>
+{% block title %}Delete Nutrient Value — NutriOpt{% endblock %}
 
-<form method="post">
-    {% csrf_token %}
-    <button type="submit">Yes, Delete</button>
-</form>
+{% block nav_plants %}active{% endblock %}
 
-<br>
+{% block content %}
 
-<a href="{% url 'optimizer_ui:ingredient_nutrient_list' ingredient.id %}">
-    Cancel
-</a>
+<div class="page-header-row">
+    <div class="page-header">
+        <h1>Delete Nutrient Value</h1>
+        <p>Confirm before removing this nutrient value from the formula ingredient.</p>
+    </div>
+</div>
+
+<div class="card delete-card">
+
+    <h2>{{ value.nutrient.name }}</h2>
+
+    <p>
+        Are you sure you want to delete
+        <strong>{{ value.nutrient.name }}</strong>
+        from
+        <strong>{{ ingredient.ingredient }}</strong>?
+    </p>
+
+    <form method="post" class="delete-actions">
+        {% csrf_token %}
+
+        <button type="submit" class="btn btn-danger">
+            Yes, Delete
+        </button>
+
+        <a href="{% url 'optimizer_ui:ingredient_nutrient_list' ingredient.id %}"
+           class="btn btn-secondary">
+            Cancel
+        </a>
+    </form>
+
+</div>
+
+{% endblock %}

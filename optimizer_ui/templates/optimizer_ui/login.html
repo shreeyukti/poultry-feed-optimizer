@@ -1,29 +1,51 @@
+{% load static %}
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Login</title>
+    <title>NutriOpt Login</title>
+    <link rel="stylesheet" href="{% static 'optimizer_ui/css/style.css' %}">
 </head>
-<body>
-    <h1>Login</h1>
+<body class="login-body">
 
-    {% if error %}
-        <p style="color: red;">{{ error }}</p>
-    {% endif %}
+<div class="login-page">
 
-    <form method="POST">
-        {% csrf_token %}
+    <div class="login-logo">
+        <img src="{% static 'optimizer_ui/images/logo.png' %}" alt="NutriOpt">
+    </div>
 
-        <label>Username</label>
-        <input type="text" name="username" required>
+    <div class="login-title">
+        <h1>Intelligent Feed</h1>
+        <h2>Optimization Platform</h2>
+    </div>
 
-        <br><br>
+    <div class="login-card">
+        <h2>Sign in</h2>
 
-        <label>Password</label>
-        <input type="password" name="password" required>
+        {% if error %}
+            <p class="login-error">{{ error }}</p>
+        {% endif %}
 
-        <br><br>
+        <form method="POST">
+            {% csrf_token %}
 
-        <button type="submit">Login</button>
-    </form>
+            <label>Username</label>
+            <input type="text" name="username" placeholder="Enter your username" required>
+
+            <label>Password</label>
+            <input type="password" name="password" placeholder="Enter your password" required>
+
+            <div class="remember-row">
+                <input type="checkbox" name="remember_me" id="remember_me">
+                <label for="remember_me">Remember me</label>
+            </div>
+
+            <button type="submit">Sign in</button>
+        </form>
+
+        <p class="login-help">Need access? Contact administrator</p>
+    </div>
+
+</div>
+
 </body>
 </html>

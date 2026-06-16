@@ -1,43 +1,76 @@
-<h1>{{ ingredient.ingredient }} Nutrient Values</h1>
+{% extends "optimizer_ui/base.html" %}
 
-<p>
-    Formula: {{ formula.name }}
-</p>
+{% block title %}{{ ingredient.ingredient }} Nutrient Values — NutriOpt{% endblock %}
 
-<p>
-    <a href="{% url 'optimizer_ui:ingredient_nutrient_create' ingredient.id %}">
+{% block nav_plants %}active{% endblock %}
+
+{% block content %}
+
+<div class="page-header-row">
+
+    <div class="page-header">
+        <h1>{{ ingredient.ingredient }} Nutrient Values</h1>
+        <p>
+            Formula: <strong>{{ formula.name }}</strong>
+        </p>
+    </div>
+
+    <a class="btn"
+       href="{% url 'optimizer_ui:ingredient_nutrient_create' ingredient.id %}">
         Add Nutrient Value
     </a>
-</p>
 
-<table border="1" cellpadding="6" cellspacing="0">
-    <tr>
-        <th>Nutrient</th>
-        <th>Value</th>
-        <th>Unit</th>
-        <th>Action</th>
-    </tr>
+</div>
 
-    {% for value in nutrient_values %}
-    <tr>
-        <td>{{ value.nutrient.name }}</td>
-        <td>{{ value.value }}</td>
-        <td>{{ value.nutrient.unit }}</td>
-        <td>
-            <a href="{% url 'optimizer_ui:ingredient_nutrient_update' value.id %}">Edit</a>
-            |
-            <a href="{% url 'optimizer_ui:ingredient_nutrient_delete' value.id %}">Delete</a>
-        </td>
-    </tr>
-    {% empty %}
-    <tr>
-        <td colspan="4">No nutrient values added for this ingredient.</td>
-    </tr>
-    {% endfor %}
-</table>
+<div class="card">
 
-<br>
+    <div class="table-wrapper">
 
-<a href="{% url 'optimizer_ui:formula_detail' formula.id %}">
-    ← Back to Formula Workspace
-</a>
+        <table>
+            <thead>
+                <tr>
+                    <th>Nutrient</th>
+                    <th>Value</th>
+                    <th>Unit</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                {% for value in nutrient_values %}
+                <tr>
+                    <td>{{ value.nutrient.name }}</td>
+                    <td><strong>{{ value.value }}</strong></td>
+                    <td>{{ value.nutrient.unit }}</td>
+                    <td>
+                        <a href="{% url 'optimizer_ui:ingredient_nutrient_update' value.id %}">
+                            Edit
+                        </a>
+                        |
+                        <a href="{% url 'optimizer_ui:ingredient_nutrient_delete' value.id %}">
+                            Delete
+                        </a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr class="table-empty">
+                    <td colspan="4">
+                        No nutrient values added for this ingredient.
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+    </div>
+
+</div>
+
+<div style="margin-top: 20px;">
+    <a href="{% url 'optimizer_ui:formula_detail' formula.id %}"
+       class="btn btn-secondary">
+        Back to Formula Workspace
+    </a>
+</div>
+
+{% endblock %}
